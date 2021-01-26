@@ -1,14 +1,6 @@
-#   
-#   Team 
-#   Jess and Rob
-# 
-#
-#   Broker in Python
 #
 
-
-print('Broker started')
-#
+#   Built from publisher.py hello world example
 #   Hello World server in Python
 #   Binds REP socket to tcp://*:5555
 #   Expects b"Hello" from client, replies with b"World"
@@ -21,22 +13,47 @@ context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.bind("tcp://*:5555")
 
-# Define a blank dictionary to hold IDs of applications
-blank_dict = {}
+# Dictionary for holding subcriber and publisher information
+registry = {'PUB':[],'SUB':[]}
 
 while True:
     #  Wait for next request from client
     message = socket.recv()
-    print("Received request: %s" % message)
+    # print("Received request: %s" % message)
     decoded_message = message.decode("utf-8")
-    if 'topic' in decoded_message:
-        topic = decoded_message.split(',')[0].split('=')[1]
-        ID = decoded_message.split(',')[1].split('=')[1]
-        app_type = decoded_message.split(',')[1][:3]
+    print(decoded_message)
+    if '_:_' in decoded_message:
+        deliminated_message = decoded_message.split('_:_')
+        app_type = deliminated_message[1]
+        ID = deliminated_message[5]
+        topic = deliminated_message[3]
         print(app_type,topic,ID)
+        if 'Register' in deliminated_message[0]:
+            print('registering end point')
+            if 'SUB' in deliminated_message[1]:
+                # add ID and topic to set of registered subscribers as to not create duplicates 
+                x = set(registry['SUB'])
+                x.add(ID + ':' + topic)
+                registry['SUB'] = x
+                print('registry',registry)
+                socket.send(b"Registered")
+            if 'PUB' in deliminated_message[1]:
+                # add ID and topic to set of registered subscribers as to not create duplicates 
+                x = set(registry['SUB'])
+                x.add(ID + ':' + topic)
+                registry['SUB'] = x
+                print('registry',registry)
+                socket.send(b"Registered")   
+
+        else:
+
+            socket.send(b"Received") 
+
+     
+
 
     #  Do some 'work'
     time.sleep(1)
 
-    #  Send reply back to client
-    socket.send(b"World")
+    # #  Send reply back to client
+    # socket.send(b"World")

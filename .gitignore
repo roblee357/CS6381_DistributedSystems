@@ -1,3 +1,8 @@
+
+zguide/
+
+# All below is from gitignore template - Rob
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
