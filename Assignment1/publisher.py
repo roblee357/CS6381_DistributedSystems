@@ -60,8 +60,7 @@ def main ():
     register(socket, args)
     #  Do 10 requests, waiting each time for a response
     for request in range(10):
-        print("Sending request %s ..." % request)
-        message = 'Transmission:_PUB_:_topic_:_' + args.topic + '_:_ID_:_' + str(args.id) + '_:_' +  args.message + ' ' + str(request)
+        message = 'Transmission_:_PUB_:_topic_:_' + args.topic + '_:_ID_:_' + str(args.id) + '_:_' +  args.message + ' ' + str(request)
         # message = 'Transmission:_PUB_:_' + str(args.id) + '_:_' + args.topic + '_:_' + args.message 
         bmessage = str.encode(message)
         socket.send(bmessage)
