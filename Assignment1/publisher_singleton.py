@@ -6,44 +6,47 @@ import argparse
 # What the Gang of Four’s original Singleton Pattern
 # might look like in Python.
 
-class Publisher():
-    # _instance = None
+class Publisher(object):
+    _instance = None
 
-    # def setup_socket(self,topic,pub_id):
-    #     context = zmq.Context()
-    #     with open('config.json','r') as fin:
-    #         config = json.load(fin)
-    #     #  Socket to talk to server
-    #     print("Connecting to broker...")
-    #     socket = context.socket(zmq.REQ)
-    #     con_str = "tcp://" + config['ip'] + ":" + config['port']
-    #     print(con_str)
-    #     socket.connect(con_str)
-    #     return socket
-
-    def __init__(self, topic,pub_id):
-        self.topic = topic
-        self.pub_id = pub_id
-        print('Creating the object')
+    def setup_socket(cls,topic,pub_id):
         context = zmq.Context()
         with open('config.json','r') as fin:
             config = json.load(fin)
         #  Socket to talk to server
         print("Connecting to broker...")
-        self.socket = context.socket(zmq.REQ)
+        socket = context.socket(zmq.REQ)
         con_str = "tcp://" + config['ip'] + ":" + config['port']
         print(con_str)
-        self.socket.connect(con_str)
-        ## Registering ## Commented out as each message is headered with pud_id and topic.
-        # message = 'PUB_:_' + str(pub_id) + '_:_' + topic + '_:_registering'
-        # register_reply = self.send(message)
-        # print(register_reply)
+        socket.connect(con_str)
+        return socket
 
-    def send(self, message):
-        message = 'PUB_:_' + str(self.pub_id) + '_:_' + self.topic + '_:_' + message
+    def __new__(cls, topic,pub_id):
+        if cls._instance is None:
+            cls.topic = topic
+            cls.pub_id = pub_id
+            print('Creating the object')
+            cls._instance = super(Publisher, cls).__new__(cls)
+            # Put any initialization here.
+            context = zmq.Context()
+            with open('config.json','r') as fin:
+                config = json.load(fin)
+            #  Socket to talk to server
+            print("Connecting to broker...")
+            cls.socket = context.socket(zmq.REQ)
+            con_str = "tcp://" + config['ip'] + ":" + config['port']
+            print(con_str)
+            cls.socket.connect(con_str)
+            message = 'PUB_:_' + str(pub_id) + '_:_' + topic + '_:_registering'
+            register_reply = cls.send(cls,message)
+            print(register_reply)
+        return cls._instance
+
+    def send(cls, message):
+        message = 'PUB_:_' + str(cls.pub_id) + '_:_' + cls.topic + '_:_' + message
         bmessage = str.encode(message)
-        self.socket.send(bmessage)
-        reply = self.socket.recv()
+        cls.socket.send(bmessage)
+        reply = cls.socket.recv()
         # print(reply)
         return reply
 
@@ -58,7 +61,6 @@ def main ():
     message = 'hello again'
     reply = pub2.send(message)
     print(reply)
-
 #----------------------------------------------
 if __name__ == '__main__':
     main ()

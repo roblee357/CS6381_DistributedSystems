@@ -1,0 +1,8 @@
+#
+#   CS6381 Distributed Systems
+#   Spring 2021
+#   Assignment 1
+#   Team 5
+#   Rob Lee (robert.e.lee.1@vanderbilt.edu) and Jess Phelam (Jessica.phelam@vanderbilt.edu)
+#   Publisher API
+#

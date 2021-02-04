@@ -1,11 +1,3 @@
-#
-
-#   Built from publisher.py hello world example
-#   Hello World server in Python
-#   Binds REP socket to tcp://*:5555
-#   Expects b"Hello" from client, replies with b"World"
-#
-
 import time, sys, random
 import zmq
 
@@ -36,22 +28,25 @@ while True:
     print(decoded_message)
     if '_:_' in decoded_message:
         deliminated_message = decoded_message.split('_:_')
-        app_type = deliminated_message[1]
-        ID = deliminated_message[5]
-        topic = deliminated_message[3]
-        print(app_type,topic,ID)
+        app_type = deliminated_message[0]
+        ID = deliminated_message[1]
+        topic = deliminated_message[2]
+        message = deliminated_message[3]
+        print(app_type,topic,ID,message)
       
         x = set(registry[app_type])
-        print('x',x,'registry[app_type]',registry[app_type])
+        # print('x',x,'registry[app_type]',registry[app_type])
         x.add(ID + ':' + topic)
         registry[app_type] = x
         print('registry',registry)
 
-        messagedata = random.randrange(1,215) - 80
-        print("%s %d" % (topic, messagedata))
+        messagedata = message #random.randrange(1,215) - 80
+        print("%s %s" % (topic, messagedata))
         bmessage = str.encode(str(topic) + ' ' + str(messagedata))
         sub_socket.send(bmessage)
         
         pub_socket.send(b"Published " + bmessage)
+    else:
+        pub_socket.send(b"Published " + message)
 
     time.sleep(.01)

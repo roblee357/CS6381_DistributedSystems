@@ -1,50 +1,57 @@
-import sys, argparse
-import zmq
 
 
-def parseCmdLineArgs ():
-    # parse the command line
-    parser = argparse.ArgumentParser ()
+import sys, zmq, json
 
-    # optional arguments
-    parser.add_argument ("-bip", "--brokerip",  default='localhost', help="IP addr of broker")
-    parser.add_argument ("-bp", "--brokerport",   default='5556', help="IP addr of broker")
-    parser.add_argument ("-m", "--message",   default='word', help="message")
-    parser.add_argument ("-id", "--id", type=int,   default=0, help="ID (int)")
+class Subscriber():
 
-    # # add positional arguments in that order
-    parser.add_argument ("topic", help="topic name")
+    # def setup_socket(self,topic,sub_id):
+    #     # Socket to talk to server
+    #     with open('config.json','r') as fin:
+    #         config = json.load(fin)
 
-    # parse the args
-    args = parser.parse_args ()
-    return args
+    #     context = zmq.Context()
+    #     socket = context.socket(zmq.SUB)
 
-def setup_socket(args):
-    # Socket to talk to server
-    context = zmq.Context()
-    socket = context.socket(zmq.SUB)
+    #     print("Socket setup...")
 
-    print("Socket setup...")
+    #     bconnectionstring = str.encode('tcp://' + config['ip'] + ":" + config['port'])
+    #     socket.connect (bconnectionstring)
 
-    bconnectionstring = str.encode('tcp://' +  args.brokerip  + ':' + args.brokerport)
-    socket.connect (bconnectionstring)
+    #     # Subscribe to zipcode, default is NYC, 10001
+    #     topicfilter = str.encode(args.topic)
+    #     socket.setsockopt(zmq.SUBSCRIBE, topicfilter)
+    #     return socket
 
-    # Subscribe to zipcode, default is NYC, 10001
-    topicfilter = str.encode(args.topic)
-    socket.setsockopt(zmq.SUBSCRIBE, topicfilter)
-    return socket
+    def __init__(self, topic,sub_id):
+        self.topic = topic
+        self.sub_id = sub_id
+        print('Creating the object')
+        context = zmq.Context()
+        with open('config.json','r') as fin:
+            config = json.load(fin)
+        #  Socket to talk to server
+        print("Connecting to broker...")
+        self.socket = context.socket(zmq.SUB)
+        self.con_str = "tcp://" + config['ip'] + ":" + config['port']
+        print(self.con_str)
+        self.socket.connect(self.con_str)
+        topicfilter = str.encode(self.topic)
+        self.socket.setsockopt(zmq.SUBSCRIBE, topicfilter)
+        ## Registering ## Commented out as each message is headered with pud_id and topic.
+        # message = 'PUB_:_' + str(pub_id) + '_:_' + topic + '_:_registering'
+        # register_reply = self.send(message)
+        # print(register_reply)
+
+    def run(self):
+        print('sub_id',self.sub_id,'subscribed to:' ,self.topic,'on', self.con_str)
+        while True:
+            string = self.socket.recv()
+            print(string)        
 
 # main
 def main():
-    # first parse the command line arguments
-    args = parseCmdLineArgs ()
-    # setup socket with commandline arguments
-    socket = setup_socket(args)
-
-    total_value = 0
-    while True:
-        string = socket.recv()
-        print(string)
+    sub1 = Subscriber('topic1',1)
+    sub1.run()
 
 
 #----------------------------------------------
