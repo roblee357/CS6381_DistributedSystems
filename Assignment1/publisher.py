@@ -1,4 +1,3 @@
-print('subscriber started')
 import zmq,  json 
 import argparse
 

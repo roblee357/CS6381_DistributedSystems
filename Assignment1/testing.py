@@ -6,30 +6,52 @@ from subscriber import *
 from broker import *
 
 
-broker = Broker()
-broker.run()
+def start_broker():
+    print('broker starting')
+    broker = Broker()
+    broker.run()
+    
+def create_publishers():
+    print('creating pub1 ')
+    pub1 = Publisher('topic1',3)
+    print('creating pub2 ')
+    pub2 = Publisher('topic2',2)
+    while True:
+        time.sleep(1)
+        reply = pub1.send('hello')
+        print(reply)
+        message = 'hello again'
+        reply = pub2.send(message)
+        print(reply)
 
-pub1 = publisher.Publisher('topic1',3)
-reply = pub1.send('hello')
-print(reply)
+def create_subscribers1():
+    print('creating sub1 ')
+    sub1 = Subscriber('topic1',3)
+    while True:
+        reply = sub1.run()
+        print('subscriber 1 ' , reply)
 
-pub2 = publisher.Publisher('topic2',2)
-message = 'hello again'
-reply = pub2.send(message)
-print(reply)
+def create_subscribers2():
+    print('creating sub2 ')
+    sub2 = Subscriber('topic2',3)
+    print('subscribers started')
+    while True:
+        reply = sub2.run()
+        print('subscriber 2 ' , reply)
+        
+if __name__ == "__main__":
+    print('starting broker process')
+    Process(target=start_broker).start()
+    print('creating publishers process')
+    Process(target=create_publishers).start()
+    print('creating subscribers process')
+    Process(target=create_subscribers1).start()
+    print('starting subscribers')
+    Process(target=create_subscribers2).start()
+    print('process started')
 
-sub1 = Subscriber('topic1',3)
-sub2 = Subscriber('topic2',3)
-
-while True:
-    reply = sub2.run()
-    print(reply)
-    reply = sub1.run()
-    print(reply)
-
-
-
-
+# reply = pub1.send('hello pub1 2')
+# print(reply)
 
 # def server_push(port="5556"):
 #     context = zmq.Context()
@@ -100,4 +122,3 @@ while True:
 #     Process(target=server_push, args=(server_push_port,)).start()
 #     Process(target=server_pub, args=(server_pub_port,)).start()
 #     Process(target=client, args=(server_push_port,server_pub_port,)).start()
-        
