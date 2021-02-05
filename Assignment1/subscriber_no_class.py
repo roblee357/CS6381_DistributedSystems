@@ -37,8 +37,6 @@ def main():
         string = socket.recv()
         print(string)
 
-
-
 #----------------------------------------------
 if __name__ == '__main__':
     main ()

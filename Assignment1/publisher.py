@@ -24,15 +24,15 @@ class Publisher():
     def __init__(self, topic,pub_id):
         self.topic = topic
         self.pub_id = pub_id
-        print('Creating the object')
+        # print('Creating the object')
         context = zmq.Context()
         with open('config.json','r') as fin:
             config = json.load(fin)
         #  Socket to talk to server
-        print("Connecting to broker...")
+        # print("Connecting to broker...")
         self.socket = context.socket(zmq.REQ)
-        con_str = "tcp://" + config['ip'] + ":" + config['port']
-        print(con_str)
+        con_str = "tcp://" + config['ip'] + ":" + config['pub_port']
+        # print(con_str)
         self.socket.connect(con_str)
         ## Registering ## Commented out as each message is headered with pud_id and topic.
         # message = 'PUB_:_' + str(pub_id) + '_:_' + topic + '_:_registering'

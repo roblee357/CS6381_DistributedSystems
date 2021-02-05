@@ -1,52 +1,61 @@
 import time, sys, random
 import zmq
 
-# Request - Reply socket for publishers
-context = zmq.Context()
-pub_socket = context.socket(zmq.REP)
-pub_socket.bind("tcp://*:5555")
 
-# Publish - Subscribe socket for subscribers
-port = "5556"
-if len(sys.argv) > 1:
-    port =  sys.argv[1]
-    int(port)
+class Broker:
 
-#context = zmq.Context()
-sub_socket = context.socket(zmq.PUB)
-sub_socket.bind("tcp://*:%s" % port)
+    def __init__(self):
+        # Request - Reply socket for publishers
+        self.context = zmq.Context()
+        self.pub_socket = self.context.socket(zmq.REP)
+        self.pub_socket.bind("tcp://*:5555")
+        # Publish - Subscribe socket for subscribers
+        self.port = "5556"
+        if len(sys.argv) > 1:
+            port =  sys.argv[1]
+            int(port)
+        #context = zmq.Context()
+        self.sub_socket = self.context.socket(zmq.PUB)
+        self.sub_socket.bind("tcp://*:%s" % self.port)
+        # Dictionary for holding subcriber and publisher information
+        self.registry = {'PUB':[],'SUB':[]}
 
+    def run(self):
+        while True:
+            #  Wait for next request from client
+            self.message = self.pub_socket.recv()
+            # print("Received request: %s" % message)
+            self.decoded_message = self.message.decode("utf-8")
+            print(self.decoded_message)
+            if '_:_' in self.decoded_message:
+                self.deliminated_message = self.decoded_message.split('_:_')
+                self.app_type = self.deliminated_message[0]
+                self.ID = self.deliminated_message[1]
+                self.topic = self.deliminated_message[2]
+                self.message = self.deliminated_message[3]
+                print(self.app_type,self.topic,self.ID,self.message)
+            
+                self.x = set(self.registry[self.app_type])
+                # print('x',x,'registry[app_type]',registry[app_type])
+                self.x.add(self.ID + ':' + self.topic)
+                self.registry[self.app_type] = self.x
+                print('registry',self.registry)
 
-# Dictionary for holding subcriber and publisher information
-registry = {'PUB':[],'SUB':[]}
+                self.messagedata = self.message #random.randrange(1,215) - 80
+                print("%s %s" % (self.topic, self.messagedata))
+                self.bmessage = str.encode(str(self.topic) + ' ' + str(self.messagedata))
+                self.sub_socket.send(self.bmessage)
+                
+                self.pub_socket.send(b"Published " + self.bmessage)
+            else:
+                self.pub_socket.send(b"Published " + self.message)
 
-while True:
-    #  Wait for next request from client
-    message = pub_socket.recv()
-    # print("Received request: %s" % message)
-    decoded_message = message.decode("utf-8")
-    print(decoded_message)
-    if '_:_' in decoded_message:
-        deliminated_message = decoded_message.split('_:_')
-        app_type = deliminated_message[0]
-        ID = deliminated_message[1]
-        topic = deliminated_message[2]
-        message = deliminated_message[3]
-        print(app_type,topic,ID,message)
-      
-        x = set(registry[app_type])
-        # print('x',x,'registry[app_type]',registry[app_type])
-        x.add(ID + ':' + topic)
-        registry[app_type] = x
-        print('registry',registry)
+            time.sleep(.01)
 
-        messagedata = message #random.randrange(1,215) - 80
-        print("%s %s" % (topic, messagedata))
-        bmessage = str.encode(str(topic) + ' ' + str(messagedata))
-        sub_socket.send(bmessage)
-        
-        pub_socket.send(b"Published " + bmessage)
-    else:
-        pub_socket.send(b"Published " + message)
+def main():
+    broker = Broker()
+    broker.run()
 
-    time.sleep(.01)
+#----------------------------------------------
+if __name__ == '__main__':
+    main ()
