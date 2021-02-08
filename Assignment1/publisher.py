@@ -1,4 +1,4 @@
-import zmq,  json 
+import zmq,  json, sys
 import argparse
 
 class Publisher():
@@ -12,12 +12,16 @@ class Publisher():
         self.use_broker = config['use_broker']
         con_str = "tcp://" + config['ip'] + ":" + config['pub_port']
         if self.use_broker:
+            print('Using broker')
             self.socket = self.context.socket(zmq.REQ)
             self.socket.connect(con_str)
         else:
-            con_str = "tcp://*:" + config['sub_port']
+            print('Not using broker')
+            srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
+            con_str = "tcp://" + srv_addr + ":" + config['no_broker_port']
             self.socket = self.context.socket(zmq.PUB)
-            self.socket.bind("tcp://*:%s" % config['sub_port'])
+            self.socket.connect(con_str)
+
 
 
     def send(self, message):
