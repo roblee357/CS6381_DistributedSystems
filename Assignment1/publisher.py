@@ -17,11 +17,25 @@ class Publisher():
             self.socket.connect(con_str)
         else:
             print('Not using broker')
-            srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-            con_str = "tcp://" + srv_addr + ":" + config['no_broker_port']
-            self.socket = self.context.socket(zmq.PUB)
-            self.socket.connect(con_str)
+            context = zmq.Context()
 
+            srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
+            connect_str = "tcp://" + srv_addr + ":5555"
+
+            # This is one of many potential publishers, and we are going
+            # to send our publications to a proxy. So we use connect
+            socket = context.socket(zmq.PUB)
+            print ("Publisher connecting to proxy at: {}".format(connect_str))
+            socket.connect(connect_str)
+
+            # keep publishing 
+            while True:
+                zipcode = 10001 #randrange(1, 100000)
+                temperature = 25 #randrange(-80, 135)
+                relhumidity = 35 #randrange(10, 60)
+
+                #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
+                socket.send_string("%i %i %i" % (zipcode, temperature, relhumidity))
 
 
     def send(self, message):

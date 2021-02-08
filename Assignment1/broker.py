@@ -35,7 +35,9 @@ class Broker:
             # But what this means is that we cannot do anything here.
             # We are just relaying things internally.
             # This blocks
+            print('i can say this')
             zmq.proxy (xsubsocket, xpubsocket)
+            print('but not this')
 
     def run(self):
         with open('config.json','r') as fin:
