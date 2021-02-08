@@ -10,12 +10,15 @@ class Publisher():
         with open('config.json','r') as fin:
             config = json.load(fin)
         self.use_broker = config['use_broker']
+        con_str = "tcp://" + config['ip'] + ":" + config['pub_port']
         if self.use_broker:
             self.socket = self.context.socket(zmq.REQ)
+            self.socket.connect(con_str)
         else:
+            con_str = "tcp://*:" + config['sub_port']
             self.socket = self.context.socket(zmq.PUB)
-        con_str = "tcp://" + config['ip'] + ":" + config['pub_port']
-        self.socket.connect(con_str)
+            self.socket.bind("tcp://*:%s" % config['sub_port'])
+
 
     def send(self, message):
         message = 'PUB_:_' + str(self.pub_id) + '_:_' + self.topic + '_:_' + message
@@ -23,6 +26,9 @@ class Publisher():
         self.socket.send(bmessage)
         if self.use_broker:
             reply = self.socket.recv()
+            return reply
+        else:
+            reply = "one way message"
             return reply
 
 
