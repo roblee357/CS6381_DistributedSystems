@@ -4,9 +4,7 @@ import sys
 import time
 import random
 import json
-
 import zmq
-
 class Broker:
 
     def __init__(self):
@@ -55,7 +53,7 @@ class Broker:
                 self.message = self.pub_socket.recv()
                 # print("Received request: %s" % message)
                 self.decoded_message = self.message.decode("utf-8")
-                print(self.decoded_message)
+                print('self.decoded_message',self.decoded_message)
                 if '_:_' in self.decoded_message:
                     self.deliminated_message = self.decoded_message.split('_:_')
                     self.app_type = self.deliminated_message[1]
@@ -82,8 +80,6 @@ class Broker:
                 time.sleep(.01)
         else:
             pass
-
-
 
 def main():
     print('Instantiating the broker')
