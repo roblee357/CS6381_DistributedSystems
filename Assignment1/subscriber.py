@@ -45,14 +45,11 @@ class Subscriber():
             # # Subscribe to zipcode, default is NYC, 10001
             zip_filter = sys.argv[2] if len(sys.argv) > 2 else "10001"
 
-            # # Python 2 - ascii bytes to unicode str
-            # if isinstance(zip_filter, bytes):
-            #     zip_filter = zip_filter.decode('ascii')
 
             # any subscriber must use the SUBSCRIBE to set a subscription, i.e., tell the
             # system what it is interested in
-            self.socket.setsockopt_string(zmq.SUBSCRIBE, zip_filter)
-            # self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
+            # self.socket.setsockopt_string(zmq.SUBSCRIBE, zip_filter)
+            self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
 
             # Process 5 updates
             total_temp = 0
@@ -77,7 +74,7 @@ class Subscriber():
 
 # main
 def main():
-    sub1 = Subscriber('topic2',1)
+    sub1 = Subscriber('topic1',1)
     string = sub1.run()
     while True:
         reply = sub1.run()

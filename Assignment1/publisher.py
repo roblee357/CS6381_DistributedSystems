@@ -1,5 +1,5 @@
 import zmq,  json, sys
-import argparse
+import argparse, time
 
 class Publisher():
 
@@ -36,6 +36,8 @@ class Publisher():
 
                 #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
                 self.socket.send_string("%i %i %i" % (zipcode, temperature, relhumidity))
+        # wait for friendly APIs to connect.
+        time.sleep(.5)
 
 
     def send(self, message):
@@ -46,27 +48,25 @@ class Publisher():
             reply = self.socket.recv()
             return reply
         else:
-            reply = "sent: " + message
-            # keep publishing 
-            for i in range(100):
-                zipcode = 10001 #randrange(1, 100000)
-                temperature = 25 #randrange(-80, 135)
-                relhumidity = 35 #randrange(10, 60)
+            # reply = "sent: " + message
+            # keep publishing
 
-                #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
-                self.socket.send_string("%i %i %i" % (zipcode, temperature, relhumidity))
-            return reply
+            self.socket.send_string(self.topic + ' ' + message )
+            time.sleep(.05)
+            # return reply
 
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
-    zipcode = 10001 #randrange(1, 100000)
+    zipcode = 10002 #randrange(1, 100000)
     temperature = 25 #randrange(-80, 135)
     relhumidity = 35 #randrange(10, 60)
 
-    pub1 = Publisher('topic1',3)
-    message = "%i %i %i" % (zipcode, temperature, relhumidity)
+    pub1 = Publisher('10001',3)
+    
+    message = "now THIS is a message"
     reply = pub1.send(message)
+    # time.sleep(5)
     print(reply)
 
     pub2 = Publisher('topic2',4)
