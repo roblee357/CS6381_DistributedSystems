@@ -24,41 +24,53 @@ class Publisher():
 
             # This is one of many potential publishers, and we are going
             # to send our publications to a proxy. So we use connect
-            socket = context.socket(zmq.PUB)
+            self.socket = context.socket(zmq.PUB)
             print ("Publisher connecting to proxy at: {}".format(connect_str))
-            socket.connect(connect_str)
+            self.socket.connect(connect_str)
 
             # keep publishing 
-            while True:
+            for i in range(6):
                 zipcode = 10001 #randrange(1, 100000)
                 temperature = 25 #randrange(-80, 135)
                 relhumidity = 35 #randrange(10, 60)
 
                 #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
-                socket.send_string("%i %i %i" % (zipcode, temperature, relhumidity))
+                self.socket.send_string("%i %i %i" % (zipcode, temperature, relhumidity))
 
 
     def send(self, message):
-        message = 'PUB_:_' + str(self.pub_id) + '_:_' + self.topic + '_:_' + message
+        # message =  self.topic + ' _:_PUB_:_' + str(self.pub_id) + '_:_' + message
         bmessage = str.encode(message)
         self.socket.send(bmessage)
         if self.use_broker:
             reply = self.socket.recv()
             return reply
         else:
-            reply = "one way message"
+            reply = "sent: " + message
+            # keep publishing 
+            for i in range(100):
+                zipcode = 10001 #randrange(1, 100000)
+                temperature = 25 #randrange(-80, 135)
+                relhumidity = 35 #randrange(10, 60)
+
+                #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
+                self.socket.send_string("%i %i %i" % (zipcode, temperature, relhumidity))
             return reply
 
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
-    pub1 = Publisher('topic1',1)
-    message = 'hello...........................................'
+    zipcode = 10001 #randrange(1, 100000)
+    temperature = 25 #randrange(-80, 135)
+    relhumidity = 35 #randrange(10, 60)
+
+    pub1 = Publisher('topic1',3)
+    message = "%i %i %i" % (zipcode, temperature, relhumidity)
     reply = pub1.send(message)
     print(reply)
 
-    pub2 = Publisher('topic2',2)
-    message = 'hello again....................................'
+    pub2 = Publisher('topic2',4)
+    message = "%i %i %i" % (zipcode, temperature, relhumidity)
     reply = pub2.send(message)
     print(reply)
 

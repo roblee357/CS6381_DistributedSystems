@@ -1,4 +1,10 @@
-import time, sys, random, json
+
+print('import')
+import sys
+import time
+import random
+import json
+
 import zmq
 
 class Broker:
@@ -52,10 +58,10 @@ class Broker:
                 print(self.decoded_message)
                 if '_:_' in self.decoded_message:
                     self.deliminated_message = self.decoded_message.split('_:_')
-                    self.app_type = self.deliminated_message[0]
-                    self.ID = self.deliminated_message[1]
-                    self.topic = self.deliminated_message[2]
-                    self.message = self.deliminated_message[3]
+                    self.app_type = self.deliminated_message[1]
+                    self.ID = self.deliminated_message[2]
+                    self.topic = self.deliminated_message[0][:-1]
+                    self.message = self.deliminated_message[2]
                     print(self.app_type,self.topic,self.ID,self.message)
                 
                     self.x = set(self.registry[self.app_type])
@@ -77,7 +83,10 @@ class Broker:
         else:
             pass
 
+
+
 def main():
+    print('Instantiating the broker')
     broker = Broker()
     broker.run()
 
