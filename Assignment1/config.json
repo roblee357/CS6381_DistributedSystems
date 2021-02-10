@@ -1,1 +1,1 @@
-{"ip": "localhost", "pub_port": "5555", "sub_port": "5556", "use_broker": true, "no_broker_port": "5556"}
+{"ip": "localhost", "pub_port": "5555", "sub_port": "5556", "use_broker": false, "no_broker_port": "5556"}

@@ -48,6 +48,7 @@ class Broker:
             config = json.load(fin)
         self.use_broker = config['use_broker']
         if self.use_broker:
+            print('run loop')
             while True:
                 #  Wait for next request from client
                 self.message = self.pub_socket.recv()

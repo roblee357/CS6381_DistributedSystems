@@ -1,25 +1,38 @@
 import zmq,  json, sys
 import argparse, time
 
+def parseCmdLineArgs ():
+    # parse the command line
+    parser = argparse.ArgumentParser ()
+    # add optional arguments
+    parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
+    # add positional arguments in that order
+    parser.add_argument ("topic", help="Topic")
+    parser.add_argument ("id", help="ID")
+    # parse the args
+    args = parser.parse_args ()
+    return args
+
 class Publisher():
 
-    def __init__(self, topic,pub_id):
+    def __init__(self, topic,pub_id,ip):
         self.topic = topic
         self.pub_id = pub_id
+        self.ip = ip
         self.context = zmq.Context()
         with open('config.json','r') as fin:
             config = json.load(fin)
         self.use_broker = config['use_broker']
-        con_str = "tcp://" + config['ip'] + ":" + config['pub_port']
+        con_str = "tcp://" + self.ip + ":" + config['pub_port']
         if self.use_broker:
             print('Using broker')
             self.socket = self.context.socket(zmq.REQ)
             self.socket.connect(con_str)
+            
         else:
             print('Not using broker')
             context = zmq.Context()
-            srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-            connect_str = "tcp://" + srv_addr + ":5555"
+            connect_str = "tcp://" + self.ip + ":5555"
             self.socket = context.socket(zmq.PUB)
             print ("Publisher connecting to proxy at: {}".format(connect_str))
             self.socket.connect(connect_str)
@@ -43,12 +56,13 @@ class Publisher():
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
-    pub1 = Publisher('10001',3)
+    args = parseCmdLineArgs ()
+    pub1 = Publisher(args.topic,args.id,args.ip)
     message = "now THIS is a message"
     reply = pub1.send(message)
     print(reply)
 
-    pub2 = Publisher('topic2',4)
+    pub2 = Publisher('topic2',4,'10.0.0.1')
     message = "messy message"
     reply = pub2.send(message)
     print(reply)

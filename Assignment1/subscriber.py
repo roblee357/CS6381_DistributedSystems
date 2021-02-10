@@ -1,11 +1,25 @@
-import sys, zmq, json
+import sys, zmq, json, argparse
+
+def parseCmdLineArgs ():
+    # parse the command line
+
+    parser = argparse.ArgumentParser ()
+    # add optional arguments
+    parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
+    # add positional arguments in that order
+    parser.add_argument ("topic", help="Topic")
+    parser.add_argument ("id", help="ID")
+    # parse the args
+    args = parser.parse_args ()
+    return args
 
 class Subscriber():
-    def __init__(self, topic,sub_id):
+    def __init__(self, topic,sub_id,ip):
         with open('config.json','r') as fin:
             config = json.load(fin)
         self.use_broker = config['use_broker']
-        con_str = "tcp://" + config['ip'] + ":" + config['pub_port']
+        self.ip = ip
+        self.con_str = "tcp://" + self.ip + ":" + config['sub_port']
         self.topic = topic
         self.sub_id = sub_id
         # print('Creating the object')
@@ -15,16 +29,11 @@ class Subscriber():
         
 
         if self.use_broker:
-            with open('config.json','r') as fin:
-                config = json.load(fin)
-            self.con_str = "tcp://" + config['ip'] + ":" + config['sub_port']
             self.socket.connect(self.con_str)
             self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
         else:
-            srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-            connect_str = "tcp://" + srv_addr + ":5556"
-            print("Collecting updates from weather server proxy at: {}".format(connect_str))
-            self.socket.connect(connect_str)
+            print("Collecting updates from weather server proxy at: {}".format(self.con_str))
+            self.socket.connect(self.con_str)
             print('topicfilter',self.topicfilter)
             self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
             while True:
@@ -39,7 +48,8 @@ class Subscriber():
                 return string
 
 def main():
-    sub1 = Subscriber('10001',1)
+    args = parseCmdLineArgs ()
+    sub1 = Subscriber(args.topic,args.id,args.ip)
     # string = sub1.run()
     while True:
         reply = sub1.run()
