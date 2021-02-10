@@ -1,10 +1,13 @@
 import zmq,  json, sys
 import argparse, time
+from datetime import datetime
+
 
 def parseCmdLineArgs ():
     # parse the command line
     parser = argparse.ArgumentParser ()
     # add optional arguments
+    parser.add_argument ("-m", "--mes", default='Hello World',help="The Message")
     parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
     # add positional arguments in that order
     parser.add_argument ("topic", help="Topic")
@@ -28,7 +31,6 @@ class Publisher():
             print('Using broker')
             self.socket = self.context.socket(zmq.REQ)
             self.socket.connect(con_str)
-            
         else:
             print('Not using broker')
             context = zmq.Context()
@@ -40,32 +42,29 @@ class Publisher():
         # wait for friendly APIs to connect.
         time.sleep(.5)
 
-
     def send(self, message):
-        message =  self.topic + ' _:_PUB_:_' + str(self.pub_id) + '_:_' + message
-
+        message =  self.topic + ' ,PUB,' + str(self.pub_id) + ',' + message
+        self.socket.send_string(message)
         if self.use_broker:
-            # bmessage = str.encode(message)
-            self.socket.send_string(message)
             reply = self.socket.recv()
             return reply
-        else:
-            self.socket.send_string(message )
-            time.sleep(.05)
 
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
     args = parseCmdLineArgs ()
     pub1 = Publisher(args.topic,args.id,args.ip)
-    message = "now THIS is a message"
-    reply = pub1.send(message)
-    print(reply)
+    for i in range(205):
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S.%f")
+        reply = pub1.send(str(i) + '_' + current_time)
+        print(str(i) + ',' + current_time)
+        time.sleep(.01)
 
-    pub2 = Publisher('topic2',4,'10.0.0.1')
-    message = "messy message"
-    reply = pub2.send(message)
-    print(reply)
+    # pub2 = Publisher('topic2',4,'10.0.0.1')
+    # message = "messy message"
+    # reply = pub2.send(message)
+    # print(reply)
 
 #----------------------------------------------
 if __name__ == '__main__':
