@@ -1,4 +1,5 @@
 import sys, zmq, json, argparse
+from discovery_client import *
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -17,6 +18,13 @@ class Subscriber():
     def __init__(self, topic,sub_id,ip):
         with open('config.json','r') as fin:
             config = json.load(fin)
+        self.dclient = Dclient('SUB',topic,sub_id,'localhost',config['dip'])
+        discovery_server_response = self.dclient.broadcast()
+        dicts = ': '.join(discovery_server_response.decode("utf-8").split(': ')[1:])
+        print('dicts',dicts)
+        pubs = json.loads(dicts)
+        for key in pubs.keys():
+            print('key',key,'value',pubs[key])
         self.use_broker = config['use_broker']
         self.ip = ip
         self.con_str = "tcp://" + self.ip + ":" + config['sub_port']
