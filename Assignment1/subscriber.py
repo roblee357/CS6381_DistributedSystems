@@ -1,14 +1,10 @@
-<<<<<<< HEAD
-import sys, zmq, json, argparse
 from discovery_client import *
-=======
 import sys, zmq, json, argparse, time
 from datetime import datetime
->>>>>>> 8640a60f9a00079f7e121a2ce6b50a94a35cc794
+from multiprocessing.pool import ThreadPool
 
 def parseCmdLineArgs ():
     # parse the command line
-
     parser = argparse.ArgumentParser ()
     # add optional arguments
     parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
@@ -23,38 +19,59 @@ class Subscriber():
     def __init__(self, topic,sub_id,ip):
         with open('config.json','r') as fin:
             config = json.load(fin)
-        self.dclient = Dclient('SUB',topic,sub_id,'localhost',config['dip'])
-        discovery_server_response = self.dclient.broadcast()
-        dicts = ': '.join(discovery_server_response.decode("utf-8").split(': ')[1:])
-        print('dicts',dicts)
-        pubs = json.loads(dicts)
-        for key in pubs.keys():
-            print('key',key,'value',pubs[key])
         self.use_broker = config['use_broker']
-        self.ip = ip
-        self.con_str = "tcp://" + self.ip + ":" + config['sub_port']
         self.topic = topic
         self.sub_id = sub_id
-        # print('Creating the object')
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.topicfilter = str.encode(self.topic)
-        print('topicfilter',self.topicfilter)
-        # if self.use_broker:
-        self.socket.connect(self.con_str)
-        self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
-        # else:
-        #     self.socket.connect(self.con_str)
-        #     self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
+        self.socket_list=[]
+        if self.use_broker:
+            self.con_str = "tcp://" + ip + ":" + config['sub_port']
+            self.socket_list.append(self.createSocket(self.con_str,self.topic))
+        else:
+            print('initiating discovery client connection')
+            self.dclient = Dclient('SUB',topic,sub_id,'localhost',config['dip'])
+            print('discovery client connection broadcast')
+            discovery_server_response = self.dclient.broadcast()
+            dicts = ': '.join(discovery_server_response.decode("utf-8").split(': ')[1:])
+            print('dicts',dicts)
+            try:
+                pubs = json.loads(dicts)
+                for key in pubs.keys():
+                    print('key',key,'value',pubs[key])
+                    self.con_str = "tcp://" + pubs[key] + ":" + config['sub_port']
+                    self.socket_list.append(self.createSocket(self.con_str,self.topic))
+            except:
+                print(dicts)
+        # self.socket = self.context.socket(zmq.SUB)
+        # self.topicfilter = str.encode(self.topic)
+        # print('topicfilter',self.topicfilter)
+        # self.socket.connect(self.con_str)
+        # self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
+
+    def createSocket(self, con_str,topicfilter):
+        context = zmq.Context()
+        socket = context.socket(zmq.SUB)
+        topicfilter = str.encode(topicfilter)
+        socket.connect(con_str)
+        socket.setsockopt(zmq.SUBSCRIBE, topicfilter)
+        return socket
+
+    def listen(self, socket):
+        while True:
+            message = socket.recv()
+            if len(message)>0:
+                return message
 
     def run(self):
-        # print('sub_id',self.sub_id,'subscribed to:' ,self.topic,'on', self.con_str)
-        while True:
-            string = self.socket.recv()
-            if len(string)>0:
-                return string
-            
+        pool = ThreadPool(processes=1)
+        for socket in self.socket_list:
+            async_result = pool.apply_async(self.listen, (socket,)) # tuple of args for foo
+        return async_result.get()
+            # t = Thread(target=self.listen)
+            # t.daemon = True
+            # t.start()
 
+
+            
 def main():
     args = parseCmdLineArgs ()
     sub1 = Subscriber(args.topic,args.id,args.ip)

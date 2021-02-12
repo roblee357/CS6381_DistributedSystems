@@ -1,3 +1,4 @@
+from discovery_client import *
 import zmq,  json, sys
 import argparse, time
 from datetime import datetime
@@ -33,6 +34,12 @@ class Publisher():
             self.socket.connect(con_str)
         else:
             print('Not using broker')
+
+            dclient = Dclient('PUB',self.topic,self.pub_id,'localhost',config['dip'])
+            for i in range(1):
+                discovery_server_response = dclient.broadcast()
+            print('discovery_server_response',discovery_server_response)
+
             context = zmq.Context()
             connect_str = "tcp://" + self.ip + ":5555"
             self.socket = context.socket(zmq.PUB)

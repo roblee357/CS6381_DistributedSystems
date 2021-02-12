@@ -28,7 +28,7 @@ class Dserve:
             config = json.load(fin)
         while True:
             #  Wait for next request from client
-            # print('started loop')
+            print('started loop')
             self.message = self.socket.recv()
             self.decoded_message = self.message.decode("utf-8")
             # print('self.decoded_message',self.decoded_message)
@@ -37,7 +37,7 @@ class Dserve:
             self.topic = self.deliminated_message[1]
             self.ID = self.deliminated_message[2]
             self.ip = self.deliminated_message[3]
-            # print(self.app_type,self.topic,self.ID,self.message)
+            print(self.app_type,self.topic,self.ID,self.message)
             try:
                 self.registry[self.app_type][self.topic][self.ID] = self.ip
             except Exception as e:

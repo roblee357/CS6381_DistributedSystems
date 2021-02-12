@@ -21,12 +21,12 @@ class Dclient():
         self.topic = topic
         self.pub_id = pub_id
         self.ip = ip
-        self.sip = sip
+        self.sip = sip #server IP
         self.context = zmq.Context()
         with open('config.json','r') as fin:
             config = json.load(fin)
         self.port = config['disc_port']
-        con_str = "tcp://" + self.ip + ":" + self.port
+        con_str = "tcp://" + self.sip + ":" + self.port
         print(con_str)
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect(con_str)
