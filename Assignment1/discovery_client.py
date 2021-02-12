@@ -25,8 +25,9 @@ class Dclient():
         self.context = zmq.Context()
         with open('config.json','r') as fin:
             config = json.load(fin)
+        self.dip = config['dip']
         self.port = config['disc_port']
-        con_str = "tcp://" + self.sip + ":" + self.port
+        con_str = "tcp://" + self.dip + ":" + self.port
         print(con_str)
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect(con_str)
@@ -34,8 +35,10 @@ class Dclient():
 
     def broadcast(self):
         message =  self.ispub + ',' +self.topic + ',' + str(self.pub_id) + ',' + str(self.sip)
+        # print('dclient sending',message)
         self.socket.send_string(message)
         reply = self.socket.recv()
+        # print('dclient recieved',reply)
         return reply
 
 def main ():

@@ -33,15 +33,15 @@ class Publisher():
             self.socket = self.context.socket(zmq.REQ)
             self.socket.connect(con_str)
         else:
-            print('Not using broker')
+            print('Not using broker',config['dip'])
 
-            dclient = Dclient('PUB',self.topic,self.pub_id,'localhost',config['dip'])
+            dclient = Dclient('PUB',self.topic,self.pub_id,config['dip'],self.ip)
             for i in range(1):
                 discovery_server_response = dclient.broadcast()
             print('discovery_server_response',discovery_server_response)
 
             context = zmq.Context()
-            connect_str = "tcp://" + self.ip + ":5555"
+            connect_str = "tcp://" + config['dip'] + ":5555"
             self.socket = context.socket(zmq.PUB)
             print ("Publisher connecting to proxy at: {}".format(connect_str))
             self.socket.connect(connect_str)
@@ -68,10 +68,6 @@ def main ():
         print(str(i) + ',' + current_time)
         time.sleep(.01)
 
-    # pub2 = Publisher('topic2',4,'10.0.0.1')
-    # message = "messy message"
-    # reply = pub2.send(message)
-    # print(reply)
 
 #----------------------------------------------
 if __name__ == '__main__':
