@@ -3,6 +3,6 @@
 #   Spring 2021
 #   Assignment 1
 #   Team 5
-#   Rob Lee (robert.e.lee.1@vanderbilt.edu) and Jess Phelam (Jessica.phelam@vanderbilt.edu)
+#   Rob Lee (robert.e.lee.1@vanderbilt.edu) and Jess Phelan (Jessica.phelan@vanderbilt.edu)
 #   Publisher API
 #
