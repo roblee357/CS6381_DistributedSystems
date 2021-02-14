@@ -1,11 +1,1 @@
-<<<<<<< HEAD
-{
-	"ip" : "localhost",
-	"pub_port" : "5555",
-	"sub_port" : "5556",
-	"use_broker" : true,
-	"no_broker_port" : "5556"
-}
-=======
-{"ip": "localhost","dip": "10.0.0.1", "disc_port": "5557", "pub_port": "5555", "sub_port": "5556", "use_broker": false, "no_broker_port": "5556"}
->>>>>>> 038b48a6f4383177275a40860a69e13655dd66e7
+{"dip": "localhost","ip": "localhost", "pub_port": "5555", "sub_port": "5556", "disc_port": "5557", "use_broker": false, "no_broker_port": "5556"}
