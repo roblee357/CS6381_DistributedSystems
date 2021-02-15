@@ -112,7 +112,7 @@ def main():
         cycle_time = str((now - last_time))
         last_time = now
         current_time = now.strftime("%H:%M:%S.%f")
-        line_out = reply + '_,' + current_time + ',' + elapsed_time + ',' + cycle_time 
+        line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
         with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
             fout.write(line_out+ '\n')
         print(line_out)

@@ -64,7 +64,7 @@ def main ():
     for i in range(205):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")
-        reply = pub1.send(str(i) + '_' + current_time)
+        reply = pub1.send(str(i) + ',' + current_time)
         with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
             fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)

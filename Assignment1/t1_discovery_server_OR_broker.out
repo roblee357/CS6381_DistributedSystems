@@ -1,0 +1,15 @@
+Instantiating the broker or discovery server
+Configurator changed use_broker from False to False
+Instantiating the discovery server
+Traceback (most recent call last):
+  File "discovery_server_OR_broker.py", line 50, in <module>
+    main ()
+  File "discovery_server_OR_broker.py", line 46, in main
+    bords = BorDS(args)
+  File "discovery_server_OR_broker.py", line 40, in __init__
+    dserver = Dserve()
+  File "/home/v2-local/Desktop/CS6381_DistributedSystems/Assignment1/discovery_server.py", line 17, in __init__
+    self.socket.bind("tcp://*:" + self.port)
+  File "zmq/backend/cython/socket.pyx", line 550, in zmq.backend.cython.socket.Socket.bind
+  File "zmq/backend/cython/checkrc.pxd", line 25, in zmq.backend.cython.checkrc._check_rc
+zmq.error.ZMQError: Address already in use
