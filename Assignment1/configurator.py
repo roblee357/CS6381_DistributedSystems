@@ -1,4 +1,4 @@
-import json
+import json, time
 
 def change(key,value):
     with open('config.json','r') as fin:
@@ -15,6 +15,19 @@ def change(key,value):
     with open('config.json','w') as fout:
         fout.write(json.dumps(config))
     print('Configurator changed',key,'from',oldVal,'to',config[key])
+    return config
+
+def load():
+    config = None
+    l = 0
+    while config == None:
+        try:
+            with open('config.json','r') as fin:
+                config = json.load(fin)
+        except:
+            time.sleep(.01)
+            print('trying to load config file' , l)
+            l += 1
     return config
 
 def main():

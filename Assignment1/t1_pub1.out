@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "publisher.py", line 1, in <module>
-    from discovery_client import *
-  File "/home/v2-local/Desktop/CS6381_DistributedSystems/Assignment1/discovery_client.py", line 1, in <module>
-    import zmq,  json, sys
-ImportError: No module named zmq

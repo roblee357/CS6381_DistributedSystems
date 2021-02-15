@@ -2,7 +2,7 @@ from discovery_client import *
 import zmq,  json, sys
 import argparse, time
 from datetime import datetime
-
+import configurator
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -24,8 +24,8 @@ class Publisher():
         self.pub_id = pub_id
         self.ip = ip
         self.context = zmq.Context()
-        with open('config.json','r') as fin:
-            config = json.load(fin)
+        config = configurator.load()
+        
         self.use_broker = config['use_broker']
         con_str = "tcp://" + self.ip + ":" + config['pub_port']
         if self.use_broker:
@@ -42,7 +42,7 @@ class Publisher():
 
             context = zmq.Context()
             # When not using broker, publisher publishes to localhost
-            connect_str = "tcp://*:5555"
+            connect_str = "tcp://" + self.ip + ":5555"
             self.socket = context.socket(zmq.PUB)
             self.socket.bind(connect_str)
             self.socket.send_string("yo yo yo this is a SETUP")
@@ -65,6 +65,8 @@ def main ():
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")
         reply = pub1.send(str(i) + '_' + current_time)
+        with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
+            fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)
         time.sleep(.01)
 

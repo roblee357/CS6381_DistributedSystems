@@ -1,9 +1,12 @@
 h1 python3 discovery_server_OR_broker.py -b brokerless &>> t1_discovery_server_OR_broker.out &
-h2 python3 subscriber.py topic1 1 -i 10.0.0.1 &> h2.out &
-h3 python3 subscriber.py topic1 2 -i 10.0.0.1 &>> t1_sub2.out &
-h4 python3 subscriber.py topic1 3 -i 10.0.0.1 &>> t1_sub3.out &
-h5 python3 subscriber.py topic2 4 -i 10.0.0.1 &>> t1_sub4.out &
-h6 python3 subscriber.py topic2 5 -i 10.0.0.1 &>> t1_sub5.out &
-h7 python3 publisher.py topic1 6 -i 10.0.0.1 -m "pub1" &>> t1_pub1.out &
-h8 python3 publisher.py topic2 7 -i 10.0.0.1 -m "pub2" &>> t1_pub2.out &
-h9 python3 publisher.py topic2 8 -i 10.0.0.1 -m "pub3" &>> t1_pub3.out &
+h7 python3 publisher.py topic2 7 -i 10.0.0.7  &>> t1_pub7.out &
+h8 python3 publisher.py topic2 8 -i 10.0.0.8  &>> t1_pub8.out &
+h9 python3 publisher.py topic2 9 -i 10.0.0.9  &>> t1_pub9.out &
+h2 python3 subscriber.py topic2 2 -i 10.0.0.2 &>> t1_sub2.out &
+h3 python3 subscriber.py topic2 3 -i 10.0.0.3 &>> t1_sub3.out &
+h4 python3 subscriber.py topic2 4 -i 10.0.0.4 &>> t1_sub4.out &
+h5 python3 subscriber.py topic2 5 -i 10.0.0.5 &>> t1_sub5.out &
+h6 python3 subscriber.py topic2 6 -i 10.0.0.6 &>> t1_sub6.out &
+h7 python3 publisher.py topic2 7 -i 10.0.0.7  &>> t1_pub7.out &
+h8 python3 publisher.py topic2 8 -i 10.0.0.8  &>> t1_pub8.out &
+h9 python3 publisher.py topic2 9 -i 10.0.0.9  &>> t1_pub9.out &
