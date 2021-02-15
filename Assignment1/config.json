@@ -1,1 +1,1 @@
-{"dip": "localhost","ip": "localhost", "pub_port": "5555", "sub_port": "5556", "disc_port": "5557", "use_broker": false, "no_broker_port": "5556"}
+{"dip": "localhost", "ip": "localhost", "pub_port": "5555", "sub_port": "5556", "disc_port": "5557", "use_broker": false, "no_broker_port": "5556"}
