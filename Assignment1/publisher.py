@@ -33,7 +33,7 @@ class Publisher():
             self.socket = self.context.socket(zmq.REQ)
             self.socket.connect(con_str)
         else:
-            print('Not using broker',config['dip'])
+            print('Not using broker. Connecting to sdiscovery server @',config['dip'])
 
             dclient = Dclient('PUB',self.topic,self.pub_id,config['dip'],self.ip)
             for i in range(1):
@@ -41,10 +41,10 @@ class Publisher():
             print('discovery_server_response',discovery_server_response)
 
             context = zmq.Context()
-            connect_str = "tcp://" + config['dip'] + ":5555"
+            # When not using broker, publisher publishes to localhost
+            connect_str = "tcp://*:5555"
             self.socket = context.socket(zmq.PUB)
-            print ("Publisher connecting to proxy at: {}".format(connect_str))
-            self.socket.connect(connect_str)
+            self.socket.bind(connect_str)
             self.socket.send_string("yo yo yo this is a SETUP")
         # wait for friendly APIs to connect.
         time.sleep(.5)

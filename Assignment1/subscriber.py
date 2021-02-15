@@ -44,12 +44,12 @@ class Subscriber():
             try:
                 pubs = json.loads(dicts)
                 for key in pubs.keys():
-                    print('key',key,'value',pubs[key])
-                    self.con_str = "tcp://" + pubs[key] + ":" + self.config['sub_port']
+                    
+                    self.con_str = "tcp://" + pubs[key] + ":" + self.config['pub_port']
+                    print('key',key,'value',pubs[key], self.con_str)
                     self.socket_list.append(self.createSocket(self.con_str,self.topic))
             except:
                 print(dicts)
-            input('sockets acquired')
 
 
     def createSocket(self, con_str,topicfilter):
@@ -85,7 +85,10 @@ class Subscriber():
         for socket in self.socket_list:
             # print(socket)
             async_result = pool.apply_async(self.listen, (socket,)) # tuple of args for foo
-        return async_result.get()
+            response = async_result.get()
+            print('getting response')
+            response = socket.recv_string()
+        return response
             # t = Thread(target=self.listen)
             # t.daemon = True
             # t.start()

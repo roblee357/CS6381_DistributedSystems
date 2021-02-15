@@ -1,7 +1,6 @@
 # Assignment 1 message broker
  
- At this point, subscriber.py can talk to publisher_broker sending the following parameters in a message.
- 1. Application type (SUB/PUB)
+ 1. sudo mn -x --link=tc --topo=tree,fanout=3,depth=2
  2. ID (int)
  3. Topic
  4. Message
