@@ -20,6 +20,11 @@
 
 
 
+
+
+
+
+
 Note: The discovery files in Assignment1 work for the "brokerless" approach.
 
 The file "discovery_server_OR_broker.py" combines the broker and the discovery server approach.
