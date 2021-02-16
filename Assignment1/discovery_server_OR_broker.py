@@ -1,3 +1,9 @@
+"""
+==================================================================
+Works as both discovery server (brokerless mode) or with the broker
+==================================================================
+
+"""
 
 import sys
 import time

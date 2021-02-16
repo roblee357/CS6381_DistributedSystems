@@ -1,3 +1,13 @@
+"""
+=====================================
+Discovery Server
+=====================================
+
+Used in Brokerless mode- in the discovery phase
+- Dictionary holds subscriber and publisher information
+"""
+
+
 import sys
 import time
 import random

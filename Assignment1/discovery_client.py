@@ -1,3 +1,13 @@
+"""
+=====================================
+Discovery Client
+=====================================
+
+Used in Brokerless mode- in the discovery phase
+- Sends request to discovery server
+"""
+
+
 import zmq,  json, sys
 import argparse, time
 
