@@ -1,4 +1,4 @@
-h1 python3 discovery_server_OR_broker.py -b brokerless &>> t1_discovery_server_OR_broker.out &
+h1 python3 discovery_server_OR_broker.py &>> t1_discovery_server_OR_broker.out &
 h7 python3 publisher.py topic2 7 -i 10.0.0.7  &>> t1_pub7.out &
 h8 python3 publisher.py topic2 8 -i 10.0.0.8  &>> t1_pub8.out &
 h9 python3 publisher.py topic2 9 -i 10.0.0.9  &>> t1_pub9.out &

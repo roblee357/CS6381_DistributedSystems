@@ -27,19 +27,19 @@ class Publisher():
         config = configurator.load()
         
         self.use_broker = config['use_broker']
-        con_str = "tcp://" + self.ip + ":" + config['pub_port']
+        
         if self.use_broker:
-            print('Using broker')
-            self.socket = self.context.socket(zmq.REQ)
+            con_str = "tcp://" + config['dip'] + ":" + config['pub_port']
+            print('Using broker @',con_str)
+            self.socket = self.context.socket(zmq.PUB)
             self.socket.connect(con_str)
         else:
+            con_str = "tcp://" + self.ip + ":" + config['pub_port']
             print('Not using broker. Connecting to sdiscovery server @',config['dip'])
-
             dclient = Dclient('PUB',self.topic,self.pub_id,config['dip'],self.ip)
             for i in range(1):
                 discovery_server_response = dclient.broadcast()
             print('discovery_server_response',discovery_server_response)
-
             context = zmq.Context()
             # When not using broker, publisher publishes to localhost
             connect_str = "tcp://" + self.ip + ":5555"
@@ -51,20 +51,23 @@ class Publisher():
 
     def send(self, message):
         message =  self.topic + ' ,PUB,' + str(self.pub_id) + ',' + message
+        # print('sending',message)
         self.socket.send_string(message)
-        if self.use_broker:
-            reply = self.socket.recv()
-            return reply
+        # if self.use_broker:
+        #     reply = self.socket.recv()
+        #     return reply
+        # else:
+        #     return None
 
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
     args = parseCmdLineArgs ()
     pub1 = Publisher(args.topic,args.id,args.ip)
-    for i in range(205):
+    for i in range(20):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")
-        reply = pub1.send(str(i) + ',' + current_time)
+        pub1.send(str(i) + ',' + current_time)
         with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
             fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)

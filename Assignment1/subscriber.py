@@ -20,15 +20,20 @@ class Subscriber():
     def __init__(self, topic,sub_id,ip):
         self.config = configurator.load()
         self.use_broker = self.config['use_broker']
+        self.broker_ip = self.config['dip']
         self.topic = topic
         self.sub_id = sub_id
         self.ip = ip
         self.socket_obj = None
         self.socket_list=[]
+        print('use broker' ,self.use_broker)
         if self.use_broker:
-            self.con_str = "tcp://" + ip + ":" + self.config['sub_port']
-            self.socket_list.append(self.createSocket(self.con_str,self.topic))
+            
+            self.con_str = "tcp://" + self.broker_ip + ":" + self.config['sub_port']
+            self.socket_obj = self.createSocket(self.con_str,self.topic)
+            print('using broker',self.con_str)
         else:
+            print('not using broker')
             self.get_sockets_from_discovery_server()
         # self.socket = self.context.socket(zmq.SUB)
         # self.topicfilter = str.encode(self.topic)
@@ -78,11 +83,13 @@ class Subscriber():
         #     fout.write('len(self.socket_list)' + str(len(self.socket_list) )+ '\n')
         self.i = 0
         # while len(self.socket_list) == 0 :
-        while self.socket_obj == None:
-            print('waiting for publishers...',self.i)
-            self.i += 1
-            time.sleep(1)
-            self.get_sockets_from_discovery_server()
+
+        if not self.use_broker:
+            while self.socket_obj == None:
+                print('waiting for publishers...',self.i)
+                self.i += 1
+                time.sleep(1)
+                self.get_sockets_from_discovery_server()
 
 
         # for socket in self.socket_list:
