@@ -18,7 +18,7 @@
  3. 4 is the ID
 
 
-![diagram](roblee357/CS6381_DistributedSystems/blob/main/Assignment1/jess/setup-diagram.png?raw=true)
+![diagram](roblee357/CS6381_DistributedSystems/blob/main/Assignment1/jess/setup-diagram.png)
 
 Note: The discovery files in Assignment1 work for the "brokerless" approach.
 
