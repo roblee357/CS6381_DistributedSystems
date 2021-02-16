@@ -1,9 +1,26 @@
 import pandas as pd
-import glob
+import glob, sys
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
 
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+
+sys.stdout = Unbuffered(sys.stdout)
+print('hello now')
+
+
+print('starting analysis')
 logs = glob.glob('log_sub_*.out')
 for log in logs:
     df = pd.read_csv(log,header=None, comment = '#',names=["topic", "type", "ID", "mesg No.", "pub time","recv time","prog time", "loop time"])
@@ -24,6 +41,10 @@ for log in logs:
     try:
         plt.figure()
         df['end-to-end'].plot()
+        df['end-to-end'].sort_values(by=['end-to-end'], axis=0, ascending=True).plot()
+        plt.title('Message Transit Time (s)')
+        plt.ylabel('Time (s)')
+        plt.xlabel('Message Number')
         plt.savefig(log + '_end-to-end.png')
     except Exception as e:
         print(e)

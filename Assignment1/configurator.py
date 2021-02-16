@@ -13,7 +13,7 @@ def change(key,value):
     else:
         config[key] = value
     with open('config.json','w') as fout:
-        fout.write(json.dumps(config))
+        fout.write(json.dumps(config, indent=4, sort_keys=True))
     print('Configurator changed',key,'from',oldVal,'to',config[key])
     return config
 

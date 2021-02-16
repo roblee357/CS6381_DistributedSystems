@@ -34,10 +34,12 @@ class BorDS:
             xpubsocket.bind ("tcp://*:5556")
             print('Proxy broker starting. Blocking...')
             zmq.proxy (xsubsocket, xpubsocket)
+            sys.stdout.flush()
         else:
             configurator.change('use_broker',False)
             print('Instantiating the discovery server')
             dserver = Dserve()
+            sys.stdout.flush()
             dserver.run()
 
 def main():

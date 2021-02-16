@@ -1,0 +1,9 @@
+h1 pkill python3
+h2 pkill python3
+h3 pkill python3
+h4 pkill python3
+h5 pkill python3
+h6 pkill python3
+h7 pkill python3
+h8 pkill python3
+h9 pkill python3

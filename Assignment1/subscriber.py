@@ -4,6 +4,21 @@ from datetime import datetime
 from multiprocessing.pool import ThreadPool
 import configurator
 
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+
+sys.stdout = Unbuffered(sys.stdout)
+print('hello now')
+
 def parseCmdLineArgs ():
     # parse the command line
     parser = argparse.ArgumentParser ()
@@ -108,6 +123,7 @@ def main():
     args = parseCmdLineArgs ()
     sub1 = Subscriber(args.topic,args.id,args.ip)
     print('# starting loop')
+    sys.stdout.flush()
     with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
         fout.write('# starting loop\n')
     start_time = datetime.now()
@@ -123,6 +139,7 @@ def main():
         with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
             fout.write(line_out+ '\n')
         print(line_out)
+        sys.stdout.flush()
 
 #----------------------------------------------
 if __name__ == '__main__':

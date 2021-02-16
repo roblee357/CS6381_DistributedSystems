@@ -4,6 +4,21 @@ import argparse, time
 from datetime import datetime
 import configurator
 
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+
+sys.stdout = Unbuffered(sys.stdout)
+print('hello now')
+
 def parseCmdLineArgs ():
     # parse the command line
     parser = argparse.ArgumentParser ()
@@ -47,7 +62,7 @@ class Publisher():
             self.socket.bind(connect_str)
             self.socket.send_string("yo yo yo this is a SETUP")
         # wait for friendly APIs to connect.
-        time.sleep(.5)
+        time.sleep(2)
 
     def send(self, message):
         message =  self.topic + ' ,PUB,' + str(self.pub_id) + ',' + message
@@ -64,13 +79,14 @@ def main ():
     """ Main program for publisher. This will be the publishing application """
     args = parseCmdLineArgs ()
     pub1 = Publisher(args.topic,args.id,args.ip)
-    for i in range(20):
+    for i in range(200):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")
         pub1.send(str(i) + ',' + current_time)
         with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
             fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)
+        sys.stdout.flush()
         time.sleep(.01)
 
 
