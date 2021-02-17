@@ -1,13 +1,3 @@
-hello now
-use broker False
-not using broker
-initiating discovery client connection
-tcp://10.0.0.1:5557
-discovery client connection broadcast
-dicts {"2": "10.0.0.3"}
-pubs {'2': '10.0.0.3'} key 2
-key 2 value 10.0.0.3 tcp://10.0.0.3:5556
-# starting loop
 # starting loop
 topic1 ,PUB,2,0,23:40:39.693342,23:40:39.698054,0:00:01.905004,0:00:01.905004
 topic1 ,PUB,2,1,23:40:39.706537,23:40:39.710975,0:00:01.917925,0:00:00.012921

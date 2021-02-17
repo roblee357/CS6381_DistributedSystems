@@ -79,6 +79,7 @@ class Subscriber():
                 print('pubs',pubs,'key',key)
                 self.con_str = "tcp://" + pubs[key] + ":" + self.config['sub_port']
                 print('key',key,'value',pubs[key], self.con_str)
+                print("# starting loop")
                 # self.socket_list.append(self.createSocket(self.con_str,self.topic))
                 self.socket_obj = self.createSocket(self.con_str,self.topic)
             except:
