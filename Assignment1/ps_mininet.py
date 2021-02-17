@@ -1,17 +1,12 @@
 #!/usr/bin/python
 
 #
-# Vanderbilt University, Computer Science
-# CS4287-5287: Principles of Cloud Computing
-# Author: Aniruddha Gokhale
-# Created: Nov 2016
-# 
-#  Purpose: The code here is used to demonstrate the homegrown wordcount
-# MapReduce framework on a network topology created using Mininet SDN emulator
-#
-# The mininet part is based on examples from the mininet distribution. The MapReduce
-# part has been modified from the earlier thread-based implementation to a more
-# process-based implementation required for this sample code
+#   CS6381 Distributed Systems
+#   Spring 2021
+#   Assignment 1
+#   Team 5 "El Sinko"
+#   Rob Lee (robert.e.lee.1@vanderbilt.edu) and Jess Phelan (Jessica.phelan@vanderbilt.edu)
+#   Publisher API
 #
 
 import os              # OS level utilities

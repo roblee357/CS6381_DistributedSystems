@@ -1,3 +1,12 @@
+#
+#   CS6381 Distributed Systems
+#   Spring 2021
+#   Assignment 1
+#   Team 5 "El Sinko"
+#   Rob Lee (robert.e.lee.1@vanderbilt.edu) and Jess Phelan (Jessica.phelan@vanderbilt.edu)
+#   Publisher API
+#
+
 from discovery_client import *
 import sys, zmq, json, argparse, time
 from datetime import datetime

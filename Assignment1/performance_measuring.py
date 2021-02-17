@@ -1,3 +1,12 @@
+#
+#   CS6381 Distributed Systems
+#   Spring 2021
+#   Assignment 1
+#   Team 5 "El Sinko"
+#   Rob Lee (robert.e.lee.1@vanderbilt.edu) and Jess Phelan (Jessica.phelan@vanderbilt.edu)
+#   Publisher API
+#
+
 import pandas as pd
 import glob, sys, os
 import matplotlib.pyplot as plt
@@ -56,8 +65,11 @@ for log in logs:
         sorted_d = np.sort(unsorted)
         t = range(len(sorted_d))
         fig, ax = plt.subplots()
-        ax.plot(t, unsorted, 'r',label='Unsorted') # plotting t, a separately 
-        ax.plot(t, sorted_d, label='Sorted Asc') # plotting t, b separately 
+        ax.plot(t, unsorted, 'r',label='Unsorted') 
+        ax.plot(t, sorted_d, label='Sorted Asc') 
+        ax.plot([0,max(t)], [float(p90),float(p90)], 'g' ,label='90th ' + p90 + 's') 
+        ax.plot([0,max(t)], [float(p95),float(p95)], 'k' ,label='95th ' + p95 + 's') 
+        ax.plot([0,max(t)], [float(p99),float(p99)], 'b' ,label='99th ' + p99 + 's') 
         # df['end-to-end'].sort_values(by=['end-to-end'], axis=0, ascending=True).plot()
         legend = ax.legend(loc='upper center', shadow=True, fontsize='x-large')
         # Put a nicer background color on the legend.

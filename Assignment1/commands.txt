@@ -1,5 +1,6 @@
 h1s1 python3 discovery_server_OR_broker.py -b broker_on &> log_discovery_server_OR_broker.out &
 h2s1 python3 publisher.py topic0 1 -i 10.0.0.2 &> log_pub_h2s1.out &
+h2s1 python3 performance_measuring.py &> log_pub_h2s1.out &
 h3s1 python3 publisher.py topic1 2 -i 10.0.0.3 &> log_pub_h3s1.out &
 h4s1 python3 publisher.py topic2 3 -i 10.0.0.4 &> log_pub_h4s1.out &
 h5s1 python3 subscriber.py topic1 1 -i 10.0.0.2 &> log_sub_h5s1.out &
