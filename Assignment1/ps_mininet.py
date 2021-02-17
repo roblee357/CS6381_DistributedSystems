@@ -45,7 +45,7 @@ def parseCmdLineArgs ():
     parser.add_argument ("-p", "--masterport", type=int, default=5556, help="Wordcount master port number, default 5556")
     parser.add_argument ("-r", "--racks", type=int, choices=[1, 2, 3], default=1, help="Number of racks, choices 1, 2 or 3")
     parser.add_argument ("-P", "--pub", type=int, default=3, help="Number of publishers, default 3")
-    parser.add_argument ("-R", "--sub", type=int, default=10, help="Number of Reduce jobs, default 10")
+    parser.add_argument ("-S", "--sub", type=int, default=10, help="Number of Reduce jobs, default 10")
     parser.add_argument ("-b","--brokermode",default='broker_on', help="Broker mode. default is broker_on")
 
     
