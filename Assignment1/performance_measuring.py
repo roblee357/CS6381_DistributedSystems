@@ -54,9 +54,14 @@ for log in logs:
         df['end-to-end'].plot()
         unsorted = df['end-to-end'].to_numpy()
         sorted_d = np.sort(unsorted)
-        plt.plot(t, a, 'r') # plotting t, a separately 
-        plt.plot(t, b, 'b') # plotting t, b separately 
+        t = range(len(sorted_d))
+        fig, ax = plt.subplots()
+        ax.plot(t, unsorted, 'r',label='Unsorted') # plotting t, a separately 
+        ax.plot(t, sorted_d, label='Sorted Asc') # plotting t, b separately 
         # df['end-to-end'].sort_values(by=['end-to-end'], axis=0, ascending=True).plot()
+        legend = ax.legend(loc='upper center', shadow=True, fontsize='x-large')
+        # Put a nicer background color on the legend.
+        # legend.get_frame().set_facecolor('C0')
         plt.title('Message Transit Time (s)')
         plt.ylabel('Time (s)')
         plt.xlabel('Message Number')
