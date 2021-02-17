@@ -5,5 +5,5 @@
     "no_broker_port": "5556",
     "pub_port": "5555",
     "sub_port": "5556",
-    "use_broker": false
+    "use_broker": true
 }

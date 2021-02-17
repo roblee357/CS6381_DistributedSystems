@@ -1,5 +1,5 @@
 import pandas as pd
-import glob, sys
+import glob, sys, os
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
@@ -21,9 +21,20 @@ print('hello now')
 
 
 print('starting analysis')
-logs = glob.glob('log_sub_*.out')
+logs = glob.glob('log_sub_h*.out')
+TAG = "# starting loop"
 for log in logs:
-    df = pd.read_csv(log,header=None, comment = '#',names=["topic", "type", "ID", "mesg No.", "pub time","recv time","prog time", "loop time"])
+    clog = 'cleaned_' + log
+    tag_found = False
+    with open(log) as in_file:
+        with open(clog, 'w') as out_file:
+            for line in in_file:
+                if not tag_found:
+                    if line.strip() == TAG:
+                        tag_found = True
+                else:
+                    out_file.write(line)
+    df = pd.read_csv(clog,header=None, comment = '#',names=["topic", "type", "ID", "mesg No.", "pub time","recv time","prog time", "loop time"])
     # df['pub time'] = df['pub time'].apply(lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f'))
     # df['recv time'] = df['recv time'].apply(lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f'))
     df['pub time s'] = df['pub time'].apply(lambda x: float(x.split(':')[2]))
@@ -41,7 +52,11 @@ for log in logs:
     try:
         plt.figure()
         df['end-to-end'].plot()
-        df['end-to-end'].sort_values(by=['end-to-end'], axis=0, ascending=True).plot()
+        unsorted = df['end-to-end'].to_numpy()
+        sorted_d = np.sort(unsorted)
+        plt.plot(t, a, 'r') # plotting t, a separately 
+        plt.plot(t, b, 'b') # plotting t, b separately 
+        # df['end-to-end'].sort_values(by=['end-to-end'], axis=0, ascending=True).plot()
         plt.title('Message Transit Time (s)')
         plt.ylabel('Time (s)')
         plt.xlabel('Message Number')
@@ -49,3 +64,6 @@ for log in logs:
     except Exception as e:
         print(e)
         print(df['loop time'])
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
