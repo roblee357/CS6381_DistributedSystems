@@ -1,6 +1,7 @@
 # Assignment 1 message broker
  
- 1. sudo python3 ps_mininet.py
+ 1. pip install -r requirements.txt
+ 2. sudo python3 ps_mininet.py
     - Optional parameters
     1. -b  = broker mode - default=broker_on - try broker_off
     3. -r  = racks  - default = 1
