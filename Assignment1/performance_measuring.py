@@ -36,6 +36,7 @@ for log in logs:
     clog = 'cleaned_' + log
     tag_found = False
     with open(log) as in_file:
+        print('log', log)
         with open(clog, 'w') as out_file:
             for line in in_file:
                 if not tag_found:

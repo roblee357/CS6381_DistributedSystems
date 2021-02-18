@@ -146,8 +146,8 @@ def main():
         last_time = now
         current_time = now.strftime("%H:%M:%S.%f")
         line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
-        with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-            fout.write(line_out+ '\n')
+        # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
+        #     fout.write(line_out+ '\n')
         print(line_out)
         sys.stdout.flush()
 

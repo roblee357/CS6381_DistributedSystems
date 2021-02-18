@@ -1,3 +1,3 @@
 Instantiating the broker or discovery server
-Configurator changed use_broker from True to False
+Configurator changed use_broker from False to False
 Instantiating the discovery server
