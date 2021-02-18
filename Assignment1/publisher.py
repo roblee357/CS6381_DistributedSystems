@@ -92,8 +92,8 @@ def main ():
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")
         pub1.send(str(i) + ',' + current_time)
-        with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-            fout.write(str(i) + ',' + current_time + '\n')
+        # with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
+        #     fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)
         sys.stdout.flush()
         time.sleep(.01)
