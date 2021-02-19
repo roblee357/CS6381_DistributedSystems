@@ -134,8 +134,8 @@ def main():
     sub1 = Subscriber(args.topic,args.id,args.ip)
     print('# starting loop')
     sys.stdout.flush()
-    with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-        fout.write('# starting loop\n')
+    # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
+    #     fout.write('# starting loop\n')
     start_time = datetime.now()
     last_time = start_time
     while True:
