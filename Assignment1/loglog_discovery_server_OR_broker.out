@@ -1,0 +1,15 @@
+Instantiating the broker or discovery server
+Configurator changed use_broker from True to True
+This is proxy: creating xsub and xpubsockets
+Traceback (most recent call last):
+  File "discovery_server_OR_broker.py", line 52, in <module>
+    main ()
+  File "discovery_server_OR_broker.py", line 48, in main
+    bords = BorDS(args)
+  File "discovery_server_OR_broker.py", line 31, in __init__
+    xsubsocket.bind("tcp://*:5555")
+  File "/home/rob/.local/lib/python3.6/site-packages/zmq/sugar/socket.py", line 172, in bind
+    super().bind(addr)
+  File "zmq/backend/cython/socket.pyx", line 540, in zmq.backend.cython.socket.Socket.bind
+  File "zmq/backend/cython/checkrc.pxd", line 28, in zmq.backend.cython.checkrc._check_rc
+zmq.error.ZMQError: Address already in use

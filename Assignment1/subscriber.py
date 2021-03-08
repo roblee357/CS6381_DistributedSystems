@@ -11,7 +11,7 @@ from discovery_client import *
 import sys, zmq, json, argparse, time
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
-import configurator
+import configurator, getIP
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -47,7 +47,7 @@ class Subscriber():
         self.broker_ip = self.config['dip']
         self.topic = topic
         self.sub_id = sub_id
-        self.ip = ip
+        self.ip = getIP.get() #ip
         self.socket_obj = None
         self.socket_list=[]
         print('use broker' ,self.use_broker)
@@ -134,8 +134,8 @@ def main():
     sub1 = Subscriber(args.topic,args.id,args.ip)
     print('# starting loop')
     sys.stdout.flush()
-    with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-        fout.write('# starting loop\n')
+    # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
+    #     fout.write('# starting loop\n')
     start_time = datetime.now()
     last_time = start_time
     while True:
@@ -146,8 +146,8 @@ def main():
         last_time = now
         current_time = now.strftime("%H:%M:%S.%f")
         line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
-        with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-            fout.write(line_out+ '\n')
+        # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
+        #     fout.write(line_out+ '\n')
         print(line_out)
         sys.stdout.flush()
 

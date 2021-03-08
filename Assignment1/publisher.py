@@ -11,7 +11,7 @@ from discovery_client import *
 import zmq,  json, sys
 import argparse, time
 from datetime import datetime
-import configurator
+import configurator, getIP
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -46,7 +46,7 @@ class Publisher():
     def __init__(self, topic,pub_id,ip):
         self.topic = topic
         self.pub_id = pub_id
-        self.ip = ip
+        self.ip = getIP.get() #ip
         self.context = zmq.Context()
         config = configurator.load()
         
@@ -92,8 +92,8 @@ def main ():
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")
         pub1.send(str(i) + ',' + current_time)
-        with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-            fout.write(str(i) + ',' + current_time + '\n')
+        # with open('log_pub_' + args.id + '_' + args.topic + '.out','a+') as fout:
+        #     fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)
         sys.stdout.flush()
         time.sleep(.01)

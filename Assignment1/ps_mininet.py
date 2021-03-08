@@ -153,18 +153,18 @@ def genCommandsFile (hosts, args):
         #cmd_str = hosts[0].name + " python3 mr_wordcount.py -p " + str (args.masterport) + " -m " + str (args.map) + " -r " + str (args.reduce) + " " + args.datafile + " &> " + hosts[0].name + ".out &\n"
         #cmds.write (cmd_str)
         # h1 python3 discovery_server_OR_broker.py -b brokerless &>> t1_discovery_server_OR_broker.out &
-        cmd_str = hosts[0].name + " python3 discovery_server_OR_broker.py -b " + args.brokermode + " &> log_discovery_server_OR_broker.out &\n"
+        cmd_str = hosts[0].name + " python3 discovery_server_OR_broker.py -b " + args.brokermode + " &> log/log_discovery_server_OR_broker.out &\n"
         cmds.write (cmd_str)
 
         #  next create the command for the map workers
         for i in range (args.pub):
-            cmd_str = hosts[i+1].name + " python3 publisher.py topic" + str((i) % args.sub) + ' ' + str(i+1) + ' -i ' + hosts[i+1].IP () + " &> log_pub_" + hosts[i+1].name + ".out &\n"
+            cmd_str = hosts[i+1].name + " python3 publisher.py topic" + str((i) % args.sub) + ' ' + str(i+1) + ' -i ' + hosts[i+1].IP () + " &> log/log_pub_" + hosts[i+1].name + ".out &\n"
             cmds.write (cmd_str)
 
         #  next create the command for the reduce workers
         k = 1 + args.pub   # starting index for reducer hosts (master + maps)
         for i in range (args.sub):
-            cmd_str = hosts[k+i].name + " python3 subscriber.py topic" + str((i+1) % args.pub) + ' ' + str(i+1) + ' -i ' + hosts[i+1].IP () + " &> log_sub_" + hosts[k+i].name + ".out &\n"
+            cmd_str = hosts[k+i].name + " python3 subscriber.py topic" + str((i+1) % args.pub) + ' ' + str(i+1) + ' -i ' + hosts[i+1].IP () + " &> log/log_sub_" + hosts[k+i].name + ".out &\n"
             cmds.write (cmd_str)
 
         # close the commands file.
