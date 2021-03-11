@@ -30,7 +30,7 @@ print('hello now')
 
 
 print('starting analysis')
-logs = glob.glob('log_sub_h*.out')
+logs = glob.glob('log_sub/log_sub_h*.out')
 TAG = "# starting loop"
 for log in logs:
     clog = 'cleaned/cleaned_' + log

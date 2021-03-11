@@ -1,13 +1,18 @@
 
-print('import')
+from kazoo.client import KazooClient
 import sys
 import time
 import random
 import json
 import zmq
+
+
 class Broker:
 
     def __init__(self):
+        seld.leader_election() # blocks until/if wins
+
+
         with open('config.json','r') as fin:
             config = json.load(fin)
         self.use_broker = config['use_broker']
@@ -32,6 +37,20 @@ class Broker:
             xpubsocket.bind ("tcp://*:5556")
             print('Proxy starting. Blocking...')
             zmq.proxy (xsubsocket, xpubsocket)
+
+    def leader_election():
+        zk = KazooClient(hosts='127.0.0.1:2181')
+        zk.start()
+        data, stat = zk.get("/")
+        print("Version: %s, data: %s" % (stat.version, data.decode("utf-8")))
+
+        election = zk.Election("/electionpath", "actor_1")
+
+        def my_leader_function():
+            print('woohoo! I won')
+        election.run(my_leader_function)
+        # zk.create("/electionpath", ephemeral=False, sequence=False)
+        zk.set("/lead_broker/broker1",b"10.0.0.2")
 
     def run(self):
         with open('config.json','r') as fin:
