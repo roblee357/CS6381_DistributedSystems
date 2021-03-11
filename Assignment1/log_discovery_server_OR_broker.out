@@ -1,0 +1,2 @@
+usage: discovery_server_OR_broker.py [-h] [-b BROKERMODE] id
+discovery_server_OR_broker.py: error: the following arguments are required: id

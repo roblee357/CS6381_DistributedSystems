@@ -13,6 +13,7 @@ import argparse, time
 from datetime import datetime
 import configurator
 from kazoo.client import KazooClient
+import getIP
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -34,7 +35,7 @@ def parseCmdLineArgs ():
     parser = argparse.ArgumentParser ()
     # add optional arguments
     parser.add_argument ("-m", "--mes", default='Hello World',help="The Message")
-    parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
+    # parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
     # add positional arguments in that order
     parser.add_argument ("topic", help="Topic")
     parser.add_argument ("id", help="ID")
@@ -44,7 +45,7 @@ def parseCmdLineArgs ():
 
 class Publisher():
 
-    def __init__(self, topic,pub_id,ip):
+    def __init__(self, topic,pub_id):
         self.zk = KazooClient(hosts='127.0.0.1:2181')
         self.zk.start()
         lead_broker = self.zk.get_children("/lead_broker")[0]
@@ -53,7 +54,7 @@ class Publisher():
         input('lead_broker from zk: ' + lead_broker + ' IP: ' + lead_broker_ip)
         self.topic = topic
         self.pub_id = pub_id
-        self.ip = ip
+        self.ip = get_IP.get() #ip
         self.context = zmq.Context()
         config = configurator.load()
         
@@ -94,7 +95,7 @@ class Publisher():
 def main ():
     """ Main program for publisher. This will be the publishing application """
     args = parseCmdLineArgs ()
-    pub1 = Publisher(args.topic,args.id,args.ip)
+    pub1 = Publisher(args.topic,args.id)
     for i in range(200):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")

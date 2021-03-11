@@ -1,14 +1,14 @@
 h1s1 python3 discovery_server_OR_broker.py -b broker_on &> log_discovery_server_OR_broker.out &
-h2s1 python3 publisher.py topic0 1 -i 10.0.0.2 &> log_pub_h2s1.out &
-h3s1 python3 publisher.py topic1 2 -i 10.0.0.3 &> log_pub_h3s1.out &
-h4s1 python3 publisher.py topic2 3 -i 10.0.0.4 &> log_pub_h4s1.out &
-h5s1 python3 subscriber.py topic1 1 -i 10.0.0.2 &> log_sub_h5s1.out &
-h6s1 python3 subscriber.py topic2 2 -i 10.0.0.3 &> log_sub_h6s1.out &
-h7s1 python3 subscriber.py topic0 3 -i 10.0.0.4 &> log_sub_h7s1.out &
-h8s1 python3 subscriber.py topic1 4 -i 10.0.0.5 &> log_sub_h8s1.out &
-h9s1 python3 subscriber.py topic2 5 -i 10.0.0.6 &> log_sub_h9s1.out &
-h10s1 python3 subscriber.py topic0 6 -i 10.0.0.7 &> log_sub_h10s1.out &
-h11s1 python3 subscriber.py topic1 7 -i 10.0.0.8 &> log_sub_h11s1.out &
-h12s1 python3 subscriber.py topic2 8 -i 10.0.0.9 &> log_sub_h12s1.out &
-h13s1 python3 subscriber.py topic0 9 -i 10.0.0.10 &> log_sub_h13s1.out &
-h14s1 python3 subscriber.py topic1 10 -i 10.0.0.11 &> log_sub_h14s1.out &
+h2s1 python3 publisher.py topic0 1 &> log_pub/log_pub_h2s1.out &
+h3s1 python3 publisher.py topic1 2 &> log_pub/log_pub_h3s1.out &
+h4s1 python3 publisher.py topic2 3 &> log_pub/log_pub_h4s1.out &
+h5s1 python3 subscriber.py topic1 1 &> log_sub/log_sub_h5s1.out &
+h6s1 python3 subscriber.py topic2 2 &> log_sub/log_sub_h6s1.out &
+h7s1 python3 subscriber.py topic0 3 &> log_sub/log_sub_h7s1.out &
+h8s1 python3 subscriber.py topic1 4 &> log_sub/log_sub_h8s1.out &
+h9s1 python3 subscriber.py topic2 5 &> log_sub/log_sub_h9s1.out &
+h10s1 python3 subscriber.py topic0 6 &> log_sub/log_sub_h10s1.out &
+h11s1 python3 subscriber.py topic1 7 &> log_sub/log_sub_h11s1.out &
+h12s1 python3 subscriber.py topic2 8 &> log_sub/log_sub_h12s1.out &
+h13s1 python3 subscriber.py topic0 9 &> log_sub/log_sub_h13s1.out &
+h14s1 python3 subscriber.py topic1 10 &> log_sub/log_sub_h14s1.out &

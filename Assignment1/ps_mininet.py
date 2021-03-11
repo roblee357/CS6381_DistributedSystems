@@ -158,13 +158,13 @@ def genCommandsFile (hosts, args):
 
         #  next create the command for the map workers
         for i in range (args.pub):
-            cmd_str = hosts[i+1].name + " python3 publisher.py topic" + str((i) % args.sub) + ' ' + str(i+1) + ' -i ' + hosts[i+1].IP () + " &> log_pub/log_pub_" + hosts[i+1].name + ".out &\n"
+            cmd_str = hosts[i+1].name + " python3 publisher.py topic" + str((i) % args.sub) + ' ' + str(i+1) + " &> log_pub/log_pub_" + hosts[i+1].name + ".out &\n"
             cmds.write (cmd_str)
 
         #  next create the command for the reduce workers
         k = 1 + args.pub   # starting index for reducer hosts (master + maps)
         for i in range (args.sub):
-            cmd_str = hosts[k+i].name + " python3 subscriber.py topic" + str((i+1) % args.pub) + ' ' + str(i+1) + ' -i ' + hosts[i+1].IP () + " &> log_sub/log_sub_" + hosts[k+i].name + ".out &\n"
+            cmd_str = hosts[k+i].name + " python3 subscriber.py topic" + str((i+1) % args.pub) + ' ' + str(i+1)  + " &> log_sub/log_sub_" + hosts[k+i].name + ".out &\n"
             cmds.write (cmd_str)
 
         # close the commands file.
@@ -190,6 +190,7 @@ def main ():
     # create the network
     print("Instantiate network")
     net = Mininet (topo, link=TCLink)
+    net.addNAT().configDefault()
 
     # activate the network
     print("Activate network")

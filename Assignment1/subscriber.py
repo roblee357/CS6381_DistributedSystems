@@ -12,6 +12,8 @@ import sys, zmq, json, argparse, time
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
 import configurator
+import getIP
+from kazoo.client import KazooClient
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -32,7 +34,7 @@ def parseCmdLineArgs ():
     # parse the command line
     parser = argparse.ArgumentParser ()
     # add optional arguments
-    parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
+    # parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
     # add positional arguments in that order
     parser.add_argument ("topic", help="Topic")
     parser.add_argument ("id", help="ID")
@@ -41,7 +43,7 @@ def parseCmdLineArgs ():
     return args
 
 class Subscriber():
-    def __init__(self, topic,sub_id,ip):
+    def __init__(self, topic,sub_id):
         self.zk = KazooClient(hosts='127.0.0.1:2181')
         self.zk.start()
         lead_broker = self.zk.get_children("/lead_broker")[0]
@@ -53,7 +55,7 @@ class Subscriber():
         self.broker_ip = lead_broker_ip   # self.config['dip']
         self.topic = topic
         self.sub_id = sub_id
-        self.ip = ip
+        self.ip = get_IP.get() #ip
         self.socket_obj = None
         self.socket_list=[]
         print('use broker' ,self.use_broker)
@@ -136,7 +138,7 @@ class Subscriber():
             
 def main():
     args = parseCmdLineArgs ()
-    sub1 = Subscriber(args.topic,args.id,args.ip)
+    sub1 = Subscriber(args.topic,args.id)
     print('# starting loop')
     sys.stdout.flush()
     # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:

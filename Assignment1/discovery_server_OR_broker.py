@@ -7,6 +7,7 @@ import zmq
 from discovery_server import *
 import argparse, configurator
 from kazoo.client import KazooClient
+import getIP
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -22,10 +23,11 @@ def parseCmdLineArgs ():
 class BorDS:
 
     def __init__(self,args):
+        self.args = args
+        self.IP = getIP.get()
         self.leader_election() # blocks until/if wins
         with open('config.json','r') as fin:
             self.config = json.load(fin)
-            
         if 'broker_on' in args.brokermode:
             configurator.change('use_broker',True)
             # This is a proxy. We create the XSUB and XPUB endpoints
@@ -52,9 +54,14 @@ class BorDS:
         data, stat = zk.get("/")
         print("Version: %s, data: %s" % (stat.version, data.decode("utf-8")))
         election = zk.Election("/electionpath", "actor_1")
-        election.run(my_leader_function)
+        election.run(self.my_leader_function)
         # zk.create("/electionpath", ephemeral=False, sequence=False)
-        zk.set("/lead_broker/broker1",b"10.0.0.2")
+        try:
+            zk.delete("/lead_broker",recursive=True)
+        except:
+            print("no leader zNode")
+        zk.ensure_path("/lead_broker/broker" + str(self.args.id))
+        zk.set("/lead_broker/broker" + str(self.args.id),bytes(self.IP,'utf-8'))
 
     def my_leader_function(self):
         print('woohoo! I won')

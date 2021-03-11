@@ -17,7 +17,7 @@ election.run(my_leader_function)
 
 
 # zk.create("/electionpath", ephemeral=False, sequence=False)
-zk.set("/lead_broker/broker1",b"10.0.0.2")
+# zk.set("/lead_broker/broker1",b"10.0.0.2")
 
 # List the children
 children = zk.get_children("/lead_broker")
