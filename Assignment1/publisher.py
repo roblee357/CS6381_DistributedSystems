@@ -12,6 +12,7 @@ import zmq,  json, sys
 import argparse, time
 from datetime import datetime
 import configurator
+from kazoo.client import KazooClient
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -44,6 +45,12 @@ def parseCmdLineArgs ():
 class Publisher():
 
     def __init__(self, topic,pub_id,ip):
+        self.zk = KazooClient(hosts='127.0.0.1:2181')
+        self.zk.start()
+        lead_broker = self.zk.get_children("/lead_broker")[0]
+        lead_broker_ip , stat = self.zk.get("/lead_broker/" + lead_broker)
+        lead_broker_ip = lead_broker_ip.decode("utf-8")
+        input('lead_broker from zk: ' + lead_broker + ' IP: ' + lead_broker_ip)
         self.topic = topic
         self.pub_id = pub_id
         self.ip = ip
@@ -53,14 +60,14 @@ class Publisher():
         self.use_broker = config['use_broker']
         
         if self.use_broker:
-            con_str = "tcp://" + config['dip'] + ":" + config['pub_port']
+            con_str = "tcp://" + lead_broker_ip + ":" + config['pub_port']
             print('Using broker @',con_str)
             self.socket = self.context.socket(zmq.PUB)
             self.socket.connect(con_str)
         else:
             # con_str = "tcp://" + self.ip + ":" + config['pub_port']
-            print('Not using broker. Connecting to sdiscovery server @',config['dip'])
-            dclient = Dclient('PUB',self.topic,self.pub_id,config['dip'],self.ip)
+            print('Not using broker. Connecting to sdiscovery server @',lead_broker_ip)
+            dclient = Dclient('PUB',self.topic,self.pub_id,lead_broker_ip,self.ip)
             for i in range(1):
                 discovery_server_response = dclient.broadcast()
             print('discovery_server_response',discovery_server_response)

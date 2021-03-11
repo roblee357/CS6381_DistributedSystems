@@ -33,7 +33,7 @@ print('starting analysis')
 logs = glob.glob('log_sub_h*.out')
 TAG = "# starting loop"
 for log in logs:
-    clog = 'cleaned_' + log
+    clog = 'cleaned/cleaned_' + log
     tag_found = False
     with open(log) as in_file:
         print('log', log)
@@ -78,7 +78,7 @@ for log in logs:
         plt.title('Message Transit Time (s)')
         plt.ylabel('Time (s)')
         plt.xlabel('Message Number')
-        plt.savefig(log + '_end-to-end.png')
+        plt.savefig( 'end-to-end/' + log + '_end-to-end.png')
     except Exception as e:
         print(e)
         print(df['loop time'])

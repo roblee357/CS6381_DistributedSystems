@@ -42,9 +42,15 @@ def parseCmdLineArgs ():
 
 class Subscriber():
     def __init__(self, topic,sub_id,ip):
+        self.zk = KazooClient(hosts='127.0.0.1:2181')
+        self.zk.start()
+        lead_broker = self.zk.get_children("/lead_broker")[0]
+        lead_broker_ip , stat = self.zk.get("/lead_broker/" + lead_broker)
+        lead_broker_ip = lead_broker_ip.decode("utf-8")
+        input('lead_broker from zk: ' + lead_broker + ' IP: ' + lead_broker_ip)
         self.config = configurator.load()
         self.use_broker = self.config['use_broker']
-        self.broker_ip = self.config['dip']
+        self.broker_ip = lead_broker_ip   # self.config['dip']
         self.topic = topic
         self.sub_id = sub_id
         self.ip = ip
@@ -52,7 +58,6 @@ class Subscriber():
         self.socket_list=[]
         print('use broker' ,self.use_broker)
         if self.use_broker:
-            
             self.con_str = "tcp://" + self.broker_ip + ":" + self.config['sub_port']
             self.socket_obj = self.createSocket(self.con_str,self.topic)
             print('using broker',self.con_str)
