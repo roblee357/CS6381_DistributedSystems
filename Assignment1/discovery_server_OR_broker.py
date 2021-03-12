@@ -53,7 +53,7 @@ class BorDS:
         zk.start()
         data, stat = zk.get("/")
         print("Version: %s, data: %s" % (stat.version, data.decode("utf-8")))
-        election = zk.Election("/electionpath", "actor_1")
+        election = zk.Election("/electionpath", "broker_" + str(self.args.id))
         election.run(self.my_leader_function)
         # zk.create("/electionpath", ephemeral=False, sequence=False)
         try:
