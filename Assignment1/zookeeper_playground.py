@@ -1,6 +1,6 @@
 from kazoo.client import KazooClient
 
-zk = KazooClient(hosts='127.0.0.1:2181')
+zk = KazooClient(hosts='172.17.0.1:2181')
 zk.stop()
 zk.start()
 data, stat = zk.get("/")

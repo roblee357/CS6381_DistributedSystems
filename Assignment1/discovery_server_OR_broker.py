@@ -25,9 +25,9 @@ class BorDS:
     def __init__(self,args):
         self.args = args
         self.IP = getIP.get()
-        self.leader_election() # blocks until/if wins
         with open('config.json','r') as fin:
             self.config = json.load(fin)
+        self.leader_election() # blocks until/if wins
         if 'broker_on' in args.brokermode:
             configurator.change('use_broker',True)
             # This is a proxy. We create the XSUB and XPUB endpoints
@@ -49,7 +49,7 @@ class BorDS:
             dserver.run()
 
     def leader_election(self):
-        zk = KazooClient(hosts='127.0.0.1:2181')
+        zk = KazooClient(hosts=self.config['zkip']+':2181')
         zk.start()
         data, stat = zk.get("/")
         print("Version: %s, data: %s" % (stat.version, data.decode("utf-8")))
