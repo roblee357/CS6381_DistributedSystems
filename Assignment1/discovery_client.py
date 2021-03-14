@@ -16,7 +16,7 @@ def parseCmdLineArgs ():
 
 class Dclient():
 
-    def __init__(self, ispub, topic,pub_id,ip,sip):
+    def __init__(self, ispub, topic,pub_id,ip,sip,dip):
         self.ispub = ispub
         self.topic = topic
         self.pub_id = pub_id
@@ -25,7 +25,7 @@ class Dclient():
         self.context = zmq.Context()
         with open('config.json','r') as fin:
             config = json.load(fin)
-        self.dip = config['dip']
+        self.dip = dip
         self.port = config['disc_port']
         con_str = "tcp://" + self.dip + ":" + self.port
         print(con_str)

@@ -55,8 +55,13 @@ class Publisher():
         self.zk.start()
         @zk.ChildrenWatch("/")
         def watch_children(children):
-            print(children)
-            self.setup_broker()
+            print('child change',children)
+            if 'lead_broker' in children:
+                leader = self.zk.get_children("/lead_broker")
+                print('leader',leader)
+                if 'broker' in leader[0]:
+                    print('broker in children')
+                    self.setup_broker()
 
     def setup_broker(self):
         self.lead_broker = self.zk.get_children("/lead_broker")[0]
@@ -104,7 +109,7 @@ def main ():
     """ Main program for publisher. This will be the publishing application """
     args = parseCmdLineArgs ()
     pub1 = Publisher(args.topic,args.id)
-    for i in range(200):
+    for i in range(20000):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")
         pub1.send(str(i) + ',' + current_time)
@@ -112,7 +117,7 @@ def main ():
         #     fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)
         sys.stdout.flush()
-        time.sleep(.1)
+        time.sleep(.5)
 
 
 #----------------------------------------------

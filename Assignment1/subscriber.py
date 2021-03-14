@@ -28,7 +28,6 @@ class Unbuffered(object):
        return getattr(self.stream, attr)
 
 sys.stdout = Unbuffered(sys.stdout)
-print('hello now')
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -43,38 +42,49 @@ def parseCmdLineArgs ():
     return args
 
 class Subscriber():
-    def __init__(self, topic,sub_id):
-        self.zk = KazooClient(hosts='127.0.0.1:2181')
-        self.zk.start()
-        lead_broker = self.zk.get_children("/lead_broker")[0]
-        lead_broker_ip , stat = self.zk.get("/lead_broker/" + lead_broker)
-        lead_broker_ip = lead_broker_ip.decode("utf-8")
-        input('lead_broker from zk: ' + lead_broker + ' IP: ' + lead_broker_ip)
-        self.config = configurator.load()
-        self.use_broker = self.config['use_broker']
-        self.broker_ip = lead_broker_ip   # self.config['dip']
-        self.topic = topic
-        self.sub_id = sub_id
-        self.ip = get_IP.get() #ip
-        self.socket_obj = None
-        self.socket_list=[]
+
+    def setup_broker(self):    
+        self.lead_broker = self.zk.get_children("/lead_broker")[0]
+        self.lead_broker_ip , stat = self.zk.get("/lead_broker/" + self.lead_broker)
+        self.lead_broker_ip = self.lead_broker_ip.decode("utf-8")
+        print('lead_broker from zk: ' + self.lead_broker + ' IP: ' + self.lead_broker_ip)
+        self.broker_ip = self.lead_broker_ip   # self.config['dip']
         print('use broker' ,self.use_broker)
+        self.run(override = 'override')
         if self.use_broker:
             self.con_str = "tcp://" + self.broker_ip + ":" + self.config['sub_port']
-            self.socket_obj = self.createSocket(self.con_str,self.topic)
+            self.createSocket()
             print('using broker',self.con_str)
         else:
             print('not using broker')
             self.get_sockets_from_discovery_server()
-        # self.socket = self.context.socket(zmq.SUB)
-        # self.topicfilter = str.encode(self.topic)
-        # print('topicfilter',self.topicfilter)
-        # self.socket.connect(self.con_str)
-        # self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
+
+    def __init__(self, args):
+        self.topic = args.topic
+        selfid = args.id
+        self.ip = getIP.get() #ip
+        self.config = configurator.load()
+        self.socket = None
+        self.socket_list=[]
+        self.use_broker = self.config['use_broker']
+        zk = KazooClient(hosts=self.config['zkip']+':2181')
+        self.zk = zk
+        self.zk.start()
+        
+        @zk.ChildrenWatch("/")
+        def watch_children(children):
+            print('child change',children)
+            if 'lead_broker' in children:
+                leader = self.zk.get_children("/lead_broker")
+                print('leader',leader)
+                if 'broker' in leader[0]:
+                    print('broker in children')
+                    self.setup_broker()
+        self.setup_broker()
 
     def get_sockets_from_discovery_server(self):
             print('initiating discovery client connection')
-            self.dclient = Dclient('SUB',self.topic,self.sub_id,'localhost',self.ip)
+            self.dclient = Dclient('SUB',self.topic,self.id,'localhost',self.ip,self.broker_ip)
             print('discovery client connection broadcast')
             discovery_server_response = self.dclient.broadcast()
             dicts = ': '.join(discovery_server_response.decode("utf-8").split(': ')[1:])
@@ -88,18 +98,21 @@ class Subscriber():
                 print('key',key,'value',pubs[key], self.con_str)
                 print("# starting loop")
                 # self.socket_list.append(self.createSocket(self.con_str,self.topic))
-                self.socket_obj = self.createSocket(self.con_str,self.topic)
+                self.createSocket()
             except:
                 print(dicts)
 
-
-    def createSocket(self, con_str,topicfilter):
-        context = zmq.Context()
-        socket = context.socket(zmq.SUB)
-        topicfilter = str.encode(topicfilter)
-        socket.connect(con_str)
-        socket.setsockopt(zmq.SUBSCRIBE, topicfilter)
-        return socket
+    def createSocket(self):
+        # try:
+        #     self.socket.close()
+        #     print('closed socket')
+        # except:
+        #     print('could not close socket')
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.topicfilter = str.encode(self.topic)
+        self.socket.connect(self.con_str)
+        self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
 
     def listen(self, socket):
         while True:
@@ -108,53 +121,38 @@ class Subscriber():
             if len(message)>0:
                 return message
 
-    def run(self,args):
-        # pool = ThreadPool(processes=1)
-        # print('len(self.socket_list)',len(self.socket_list))
-        # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-        #     fout.write('len(self.socket_list)' + str(len(self.socket_list) )+ '\n')
+    def run(self, override = ''):
+    
         self.i = 0
-        # while len(self.socket_list) == 0 :
-
         if not self.use_broker:
-            while self.socket_obj == None:
+            while self.socket == None:
                 print('waiting for publishers...',self.i)
                 self.i += 1
                 time.sleep(1)
                 self.get_sockets_from_discovery_server()
 
-
-        # for socket in self.socket_list:
-        #     # print(socket)
-        #     # async_result = pool.apply_async(self.listen, (socket,)) # tuple of args for foo
-        #     # response = async_result.get()
-        #     # print('getting response')
-        #     response = socket.recv_string()
-        response = self.socket_obj.recv_string()
-        return response
-
-
-
+        if len(override)>0:
+            print('printing override')
+            return override
+        else:
+            response = self.socket.recv_string()
+            return response
             
 def main():
     args = parseCmdLineArgs ()
-    sub1 = Subscriber(args.topic,args.id)
+    sub1 = Subscriber(args)
     print('# starting loop')
     sys.stdout.flush()
-    # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-    #     fout.write('# starting loop\n')
     start_time = datetime.now()
     last_time = start_time
     while True:
-        reply = sub1.run(args)
+        reply = sub1.run()
         now = datetime.now()
         elapsed_time = str((now - start_time))
         cycle_time = str((now - last_time))
         last_time = now
         current_time = now.strftime("%H:%M:%S.%f")
         line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
-        # with open('log_sub_' + args.id + '_' + args.topic + '.out','a+') as fout:
-        #     fout.write(line_out+ '\n')
         print(line_out)
         sys.stdout.flush()
 
