@@ -1,80 +1,74 @@
-from time import sleep
+import time
 import configurator
-from kazoo.client import KazooClient
+from kazoo.client import KazooClient   
+import argparse 
+
+def parseCmdLineArgs ():
+    # parse the command line
+    parser = argparse.ArgumentParser ()
+    # add positional arguments in that order
+    parser.add_argument ("id", help="ID")
+    args = parser.parse_args ()
+    return args
+
+class ZK:    
+    def __init__(self,args, config, ip):
+        self.args = args
+        self.ip = ip
+        self.zk = KazooClient(hosts= config['zkip']+':2181')
+        self.zk.start()
+ 
+        # zk.create("/electionpath", ephemeral=False, sequence=False)
+        # try:
+        #     self.zk.delete("/lead_broker",recursive=True)
+        # except:
+        #     print("no leader zNode")
+        # self.zk.ensure_path("/lead_broker/broker" + str(self.args.id))
+        # self.zk.set("/lead_broker/broker" + str(self.args.id),bytes(self.ip,'utf-8'))
+
+    def heartbeat(self):
+        b_path = "/electionpath/broker_" + self.args.id
+        self.zk.ensure_path(b_path)
+        heartbeat = str(time.time()).encode('utf-8')
+        self.zk.set(b_path,heartbeat)
 
 
-class Zookeeper:
-    def __init__(self, zookeeper_host):
-        self.zookeeper_host = zookeeper_host
-        
+    def checkIfLeader(self):
+        curTime = round(time.time()*1000)
+        lead_broker, znode_stats = self.zk.get("/lead_broker")
+        print('lead_broker',lead_broker, 'znode_stats ', znode_stats)
+        lead_broker_mtime = znode_stats[3]
+        print('lead_broker_mtime',lead_broker_mtime)
+        lead_broker_age = curTime - lead_broker_mtime
+        lead_broker_name = 'broker_' + lead_broker.decode('utf-8')
+        print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
+        brokers = self.zk.get_children("/electionpath")
 
-        self.zoo_client = KazooClient(hosts=f'{zookeeper_host}:2181')
-        self.zoo_client.start()
-        self.leader_observers = []
+        for broker in brokers:
+            broker_data, znode_stats = self.zk.get("/electionpath/" + broker)
+            mtime = znode_stats[3]
+            print(lead_broker_name, broker, broker_data,mtime)
+            if broker == lead_broker_name:
+                leader_age = curTime - mtime
+                if leader_age > 300:
+                    print('Leader is old. Let\'s get rid of they.', leader_age)
+                    self.claim_lead()
+                else:
+                    print('Leader is new.', leader_age)
 
-    # Get direct access to client for non-standard stuff
-    def get_client(self):
-        return self.zoo_client
 
-    def add_leader_observer(self, callback):
-        should_start = len(self.leader_observers) == 0
-        self.leader_observers.append(callback)
-        if should_start:
-            self.start_observing_leader()
-
-    def get_leader(self, i=0):
-        values = self.zoo_client.get_children('/electionpath')
-        values.sort()
-
-        # fail-safe in case the publisher (or whomever) starts before broker
-        if len(values) < 1:
-            sleep(i + 1)
-            return self.get_leader(i + 1)
-
-        return values[0]
-
-    # TODO: Watch the leader change!
-    def get_leader_ip(self):
-        leader = self.get_leader()
-        node = self.zoo_client.get(f'/electionpath/{leader}')
-        return node[0].decode('utf-8')
-
-    def cleanup(self):
-        self.zoo_client.stop()
-        self.zoo_client.close()
-
-    def watch_leader_changes(self, callback, leader=None):
-        if leader is None:
-            leader = self.get_leader()
-        self.zoo_client.get(f'/electionpath/{leader}', watch=callback)
-
-    # For help setting up new tests
-    def delete_all(self):
-        self.zoo_client.delete('/electionpath', -1, True)
-        self.zoo_client.delete('/pubs', -1, True)
-        self.zoo_client.delete('/subs', -1, True)
-
-    def start_observing_leader(self):
-        def watch_leader(data):
-            leader = self.get_leader()
-            
-            self.watch_leader_changes(watch_leader, leader)
-            for observer in self.leader_observers:
-                observer()
-        
-        leader = self.get_leader()
-        self.watch_leader_changes(watch_leader, leader)
-        for observer in self.leader_observers:
-            observer()
-
+    def claim_lead(self):
+        self.zk.set("/lead_broker", self.args.id.encode('utf-8'))
+        print('lead claimed')
 
 def main():
+    args = parseCmdLineArgs ()
+    ip = '10.0.0.' + args.id
     config = configurator.load()
-    print(config['zkip'])
-    zk = Zookeeper(config['zkip'] )
-    print('leader IP',zk.get_leader_ip())
-    
-
+    zk = ZK(args, config, ip)
+    zk.heartbeat()
+    # zk.claim_lead()
+    zk.checkIfLeader()
 
 #----------------------------------------------
 if __name__ == '__main__':
