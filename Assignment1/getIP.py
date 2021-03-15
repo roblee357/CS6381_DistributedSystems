@@ -11,7 +11,7 @@ def get(network = 'eth0'):
     
 
 def main():
-    print(get('enp'))
+    print(get())
 
 if __name__ == '__main__':
     main() 

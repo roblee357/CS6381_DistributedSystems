@@ -45,7 +45,7 @@ class Subscriber():
 
     def setup_broker(self):    
         self.lead_broker = self.zk.get_children("/lead_broker")[0]
-        self.lead_broker_ip , stat = self.zk.get("/lead_broker/" + self.lead_broker)
+        self.lead_broker_ip , stat = self.zk.get("/lead_broker/ip")
         self.lead_broker_ip = self.lead_broker_ip.decode("utf-8")
         print('lead_broker from zk: ' + self.lead_broker + ' IP: ' + self.lead_broker_ip)
         self.broker_ip = self.lead_broker_ip   # self.config['dip']

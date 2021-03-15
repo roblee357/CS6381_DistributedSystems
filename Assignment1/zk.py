@@ -18,7 +18,7 @@ class ZK:
         self.ip = ip
         self.zk = KazooClient(hosts= config['zkip']+':2181')
         self.zk.start()
-        self.b_path = "/electionpath/broker_" + self.args.id 
+        self.b_path = "/brokers/broker_" + self.args.id 
         self.ip_path = self.b_path + "/" + self.ip
         self.zk.ensure_path(self.ip_path)
         self.zk.ensure_path("/lead_broker/ip")
@@ -42,9 +42,9 @@ class ZK:
         lead_broker_age = curTime - lead_broker_mtime
         lead_broker_name = 'broker_' + lead_broker.decode('utf-8')
         print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
-        brokers = self.zk.get_children("/electionpath")
+        brokers = self.zk.get_children("/brokers")
         for broker in brokers:
-            broker_data, znode_stats = self.zk.get("/electionpath/" + broker)
+            broker_data, znode_stats = self.zk.get("/brokers/" + broker)
             mtime = znode_stats[3]
             print(lead_broker_name, broker, broker_data,mtime)
             if broker == lead_broker_name:
