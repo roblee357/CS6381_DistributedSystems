@@ -2,6 +2,7 @@ import time
 import configurator
 from kazoo.client import KazooClient   
 import argparse 
+from threading import Thread
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -17,21 +18,20 @@ class ZK:
         self.ip = ip
         self.zk = KazooClient(hosts= config['zkip']+':2181')
         self.zk.start()
- 
-        # zk.create("/electionpath", ephemeral=False, sequence=False)
-        # try:
-        #     self.zk.delete("/lead_broker",recursive=True)
-        # except:
-        #     print("no leader zNode")
-        # self.zk.ensure_path("/lead_broker/broker" + str(self.args.id))
-        # self.zk.set("/lead_broker/broker" + str(self.args.id),bytes(self.ip,'utf-8'))
+        self.b_path = "/electionpath/broker_" + self.args.id 
+        self.ip_path = self.b_path + "/" + self.ip
+        self.zk.ensure_path(self.ip_path)
+        self.zk.ensure_path("/lead_broker/ip")
 
     def heartbeat(self):
-        b_path = "/electionpath/broker_" + self.args.id
-        self.zk.ensure_path(b_path)
-        heartbeat = str(time.time()).encode('utf-8')
-        self.zk.set(b_path,heartbeat)
+        while True:
+            heartbeat = str(time.time()).encode('utf-8')
+            self.zk.set(self.b_path,heartbeat)
+            time.sleep(.05)
 
+    def start_heartbeat(self):
+        t = Thread(target=self.heartbeat)
+        t.start()  
 
     def checkIfLeader(self):
         curTime = round(time.time()*1000)
@@ -43,7 +43,6 @@ class ZK:
         lead_broker_name = 'broker_' + lead_broker.decode('utf-8')
         print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
         brokers = self.zk.get_children("/electionpath")
-
         for broker in brokers:
             broker_data, znode_stats = self.zk.get("/electionpath/" + broker)
             mtime = znode_stats[3]
@@ -56,9 +55,18 @@ class ZK:
                 else:
                     print('Leader is new.', leader_age)
 
+    def continuousLeaderCheck(self):
+        while True:
+            self.checkIfLeader()
+            time.sleep(.5)
+
+    def start_leader_checks(self):
+        t = Thread(target=self.continuousLeaderCheck)
+        t.start()          
 
     def claim_lead(self):
         self.zk.set("/lead_broker", self.args.id.encode('utf-8'))
+        self.zk.set("/lead_broker/ip", self.ip.encode('utf-8'))
         print('lead claimed')
 
 def main():
@@ -66,9 +74,11 @@ def main():
     ip = '10.0.0.' + args.id
     config = configurator.load()
     zk = ZK(args, config, ip)
-    zk.heartbeat()
+    zk.start_heartbeat()
     # zk.claim_lead()
     zk.checkIfLeader()
+    zk.start_leader_checks()
+    print('done')
 
 #----------------------------------------------
 if __name__ == '__main__':
