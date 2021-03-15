@@ -102,11 +102,11 @@ class Subscriber():
                 print(dicts)
 
     def createSocket(self):
-        # try:
-        #     self.socket.close()
-        #     print('closed socket')
-        # except:
-        #     print('could not close socket')
+        try:
+            self.socket.close()
+            print('closed socket')
+        except:
+            print('could not close socket')
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
         self.topicfilter = str.encode(self.topic)
@@ -132,11 +132,15 @@ class Subscriber():
                 self.i += 1
                 time.sleep(1)
                 self.get_sockets_from_discovery_server()
-        socks = dict(self.poller.poll())
-        print('socks',socks)
-        if self.socket in socks and socks[self.socket] == zmq.POLLIN:
-            response = self.socket.recv_string()
-            return response
+
+        try:
+            socks = dict(self.poller.poll())
+            print('socks',socks)
+            if self.socket in socks and socks[self.socket] == zmq.POLLIN:
+                response = self.socket.recv_string()
+                return response
+        except:
+            return None
             
 def main():
     args = parseCmdLineArgs ()
@@ -152,10 +156,10 @@ def main():
         cycle_time = str((now - last_time))
         last_time = now
         current_time = now.strftime("%H:%M:%S.%f")
-        if not  reply in None:
+        if not  reply is None:
             line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
         else:
-            print('reply non type')
+            print('reply none type')
         print(line_out)
         sys.stdout.flush()
 
