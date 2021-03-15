@@ -50,7 +50,6 @@ class Subscriber():
         print('lead_broker from zk: ' + self.lead_broker + ' IP: ' + self.lead_broker_ip)
         self.broker_ip = self.lead_broker_ip   # self.config['dip']
         print('use broker' ,self.use_broker)
-        self.run(override = 'override')
         if self.use_broker:
             self.con_str = "tcp://" + self.broker_ip + ":" + self.config['sub_port']
             self.createSocket()
@@ -113,6 +112,9 @@ class Subscriber():
         self.topicfilter = str.encode(self.topic)
         self.socket.connect(self.con_str)
         self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
+            # Initialize poll set
+        self.poller = zmq.Poller()
+        self.poller.register(self.socket, zmq.POLLIN)
 
     def listen(self, socket):
         while True:
@@ -130,11 +132,9 @@ class Subscriber():
                 self.i += 1
                 time.sleep(1)
                 self.get_sockets_from_discovery_server()
-
-        if len(override)>0:
-            print('printing override')
-            return override
-        else:
+        socks = dict(self.poller.poll())
+        print('socks',socks)
+        if self.socket in socks and socks[self.socket] == zmq.POLLIN:
             response = self.socket.recv_string()
             return response
             
@@ -152,7 +152,10 @@ def main():
         cycle_time = str((now - last_time))
         last_time = now
         current_time = now.strftime("%H:%M:%S.%f")
-        line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
+        if not  reply in None:
+            line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
+        else:
+            print('reply non type')
         print(line_out)
         sys.stdout.flush()
 
