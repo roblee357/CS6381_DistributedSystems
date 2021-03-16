@@ -43,17 +43,22 @@ class ZK:
         lead_broker_name = 'broker_' + lead_broker.decode('utf-8')
         print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
         brokers = self.zk.get_children("/brokers")
-        for broker in brokers:
-            broker_data, znode_stats = self.zk.get("/brokers/" + broker)
-            mtime = znode_stats[3]
-            print(lead_broker_name, broker, broker_data,mtime)
-            if broker == lead_broker_name:
-                leader_age = curTime - mtime
-                if leader_age > 300:
-                    print('Leader is old. Let\'s get rid of they.', leader_age)
-                    self.claim_lead()
-                else:
-                    print('Leader is new.', leader_age)
+        if not lead_broker_name in brokers:
+            print('broker not listed. Claiming lead',lead_broker_name, brokers)
+            self.claim_lead()   
+        else:
+            for broker in brokers:
+                broker_data, znode_stats = self.zk.get("/brokers/" + broker)
+                mtime = znode_stats[3]
+                print(lead_broker_name, broker, broker_data,mtime)
+                if broker == lead_broker_name:
+                    leader_age = curTime - mtime
+                    if leader_age > 300:
+                        print('Leader is old. Let\'s get rid of they.', leader_age)
+                        self.claim_lead()
+                    else:
+                        print('Leader is new.', leader_age)
+            
 
     def continuousLeaderCheck(self):
         while True:
@@ -65,9 +70,12 @@ class ZK:
         t.start()          
 
     def claim_lead(self):
-        self.zk.set("/lead_broker", self.args.id.encode('utf-8'))
-        self.zk.set("/lead_broker/ip", self.ip.encode('utf-8'))
-        print('lead claimed')
+        if len(self.args.id.encode('utf-8')) > 0:
+            self.zk.set("/lead_broker", self.args.id.encode('utf-8'))
+            self.zk.set("/lead_broker/ip", self.ip.encode('utf-8'))
+            print('lead claimed')
+        else:
+            print('trying to claim with null id')
 
 def main():
     args = parseCmdLineArgs ()

@@ -60,7 +60,7 @@ class Subscriber():
 
     def __init__(self, args):
         self.topic = args.topic
-        selfid = args.id
+        self.contextid = args.id
         self.ip = getIP.get() #ip
         self.config = configurator.load()
         self.socket = None
@@ -70,15 +70,15 @@ class Subscriber():
         self.zk = zk
         self.zk.start()
         
-        @zk.ChildrenWatch("/")
-        def watch_children(children):
-            print('child change',children)
-            if 'lead_broker' in children:
-                leader = self.zk.get_children("/lead_broker")
-                print('leader',leader)
-                if 'broker' in leader[0]:
-                    print('broker in children')
-                    self.setup_broker()
+        @zk.DataWatch("/lead_broker")
+        def watch_data(data, stat):
+            print('leader change',data)
+            # if 'lead_broker' in children:
+            #     leader = self.zk.get_children("/lead_broker")
+            #     print('leader',leader)
+            #     if 'broker' in leader[0]:
+            #         print('broker in children')
+            self.setup_broker()
         self.setup_broker()
 
     def get_sockets_from_discovery_server(self):
@@ -132,7 +132,8 @@ class Subscriber():
                 self.i += 1
                 time.sleep(1)
                 self.get_sockets_from_discovery_server()
-
+        # # TODO Checking lead could be done in another thread periodically instead of every message.
+        # if self.lead_broker == self.zk.get_children("/lead_broker")[0]:
         try:
             socks = dict(self.poller.poll())
             print('socks',socks)
@@ -141,6 +142,8 @@ class Subscriber():
                 return response
         except:
             return None
+        # else:
+
             
 def main():
     args = parseCmdLineArgs ()
@@ -160,6 +163,7 @@ def main():
             line_out = reply + ',' + current_time + ',' + elapsed_time + ',' + cycle_time 
         else:
             print('reply none type')
+            line_out = 'None'
         print(line_out)
         sys.stdout.flush()
 

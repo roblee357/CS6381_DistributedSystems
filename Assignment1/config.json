@@ -1,5 +1,5 @@
 {
-    "broker_timeout": 300,
+    "broker_timeout": 1300,
     "dip": "10.0.0.1",
     "disc_port": "5557",
     "ip": "localhost",
