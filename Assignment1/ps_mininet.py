@@ -44,8 +44,9 @@ def parseCmdLineArgs ():
     # add optional arguments
     parser.add_argument ("-p", "--masterport", type=int, default=5556, help="Wordcount master port number, default 5556")
     parser.add_argument ("-r", "--racks", type=int, choices=[1, 2, 3], default=1, help="Number of racks, choices 1, 2 or 3")
+    parser.add_argument ("-B", "--bkr", type=int, default=3, help="Number of brokers, default 3")
     parser.add_argument ("-P", "--pub", type=int, default=3, help="Number of publishers, default 3")
-    parser.add_argument ("-S", "--sub", type=int, default=10, help="Number of Reduce jobs, default 10")
+    parser.add_argument ("-S", "--sub", type=int, default=7, help="Number of Reduce jobs, default 7")
     parser.add_argument ("-b","--brokermode",default='broker_on', help="Broker mode. default is broker_on")
 
     
@@ -153,18 +154,20 @@ def genCommandsFile (hosts, args):
         #cmd_str = hosts[0].name + " python3 mr_wordcount.py -p " + str (args.masterport) + " -m " + str (args.map) + " -r " + str (args.reduce) + " " + args.datafile + " &> " + hosts[0].name + ".out &\n"
         #cmds.write (cmd_str)
         # h1 python3 discovery_server_OR_broker.py -b brokerless &>> t1_discovery_server_OR_broker.out &
-        cmd_str = hosts[0].name + " python3 dsorb.py 1 -b " + args.brokermode + " &> log_discovery_server_OR_broker.out &\n"
-        cmds.write (cmd_str)
+        for i in range (args.bkr):
+            cmd_str = hosts[0].name + " python3 dsorb.py "  + str(i+1) + " -b " + args.brokermode  + " &> log_discovery_server_OR_broker.out &\n"
+            cmds.write (cmd_str)
 
         #  next create the command for the map workers
+        k =  args.bkr
         for i in range (args.pub):
-            cmd_str = hosts[i+1].name + " python3 publisher.py topic" + str((i) % args.sub) + ' ' + str(i+1) + " &> log_pub/log_pub_" + hosts[i+1].name + ".out &\n"
+            cmd_str = hosts[k+i].name + " python3 application_that_publishes.py topic" + str((i) % args.sub) + ' ' + str(i+1) + " &> log_pub/log_pub_" + hosts[k+1].name + ".out &\n"
             cmds.write (cmd_str)
 
         #  next create the command for the reduce workers
-        k = 1 + args.pub   # starting index for reducer hosts (master + maps)
+        k =  args.pub + args.bkr  # starting index for reducer hosts (brokers + publishers)
         for i in range (args.sub):
-            cmd_str = hosts[k+i].name + " python3 subscriber.py topic" + str((i+1) % args.pub) + ' ' + str(i+1)  + " &> log_sub/log_sub_" + hosts[k+i].name + ".out &\n"
+            cmd_str = hosts[k+i].name + " python3 application_that_subscribes.py topic" + str((i+1) % args.pub) + ' ' + str(i+1)  + " &> log_sub/log_sub_" + hosts[k+i].name + ".out &\n"
             cmds.write (cmd_str)
 
         # close the commands file.

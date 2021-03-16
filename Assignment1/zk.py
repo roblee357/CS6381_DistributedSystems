@@ -16,6 +16,7 @@ class ZK:
     def __init__(self,args, config, ip):
         self.args = args
         self.ip = ip
+        self.config = config
         self.zk = KazooClient(hosts= config['zkip']+':2181')
         self.zk.start()
         self.b_path = "/brokers/broker_" + self.args.id 
@@ -27,7 +28,7 @@ class ZK:
         while True:
             heartbeat = str(time.time()).encode('utf-8')
             self.zk.set(self.b_path,heartbeat)
-            time.sleep(config['broker_heartrate'])
+            time.sleep(self.config['broker_heartrate'])
 
     def start_heartbeat(self):
         t = Thread(target=self.heartbeat)

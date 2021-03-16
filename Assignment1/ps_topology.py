@@ -23,8 +23,8 @@ class PS_Topo (Topo):
     # rack, the map nodes on 2nd rack and reduce nodes on the third rack. Number of
     # switches equals the number of racks.
     
-    def build (self, Racks=1, P=3, S=10):
-        print("Topology: Racks = ", Racks, ", P = ", P, ", S = ", S)
+    def build (self, Racks=1, P=3, S=10, B=3):
+        print("Topology: Racks = ", Racks, ", P = ", P, ", S = ", S, ", B = ", B)
         self.ps_switches = []
         self.ps_hosts = []
         # Python's range(N) generates 0..N-1
@@ -38,21 +38,25 @@ class PS_Topo (Topo):
                 self.addLink (self.ps_switches[r-1], self.ps_switches[r], delay='5ms')
                 print("Added link between", self.ps_switches[r-1], " and ", self.ps_switches[r])
 
-        host_index = 0
+        host_index = -1
         switch_index = 0
         # Now add the broker/discovery-server node (host master) on rack 1, i.e., switch 1
-        host = self.addHost ('h{}s{}'.format (host_index+1, switch_index+1))
-        print("Added master host", host)
-        self.addLink (host, self.ps_switches[switch_index], delay='1ms')  # zero based indexing
-        print("Added link between ", host, " and switch ", self.ps_switches[switch_index])
-        self.ps_hosts.append (host)
+
+        switch_index = (switch_index + 1) % Racks
+        for h in range (B):
+            host_index = host_index +1
+            host = self.addHost ('s{}h{}'.format (switch_index+1, host_index+1))
+            print("Added broker host", host)
+            self.addLink (host, self.ps_switches[switch_index], delay='1ms')  # zero based indexing
+            print("Added link between ", host, " and switch ", self.ps_switches[switch_index])
+            self.ps_hosts.append (host)
 
         # Now add the P PUB nodes to the next available rack
         switch_index = (switch_index + 1) % Racks
         for h in range (P):
-            host_index = host_index +1 
-            host = self.addHost('h{}s{}'.format (host_index+1, switch_index+1))
-            print("Added next map host", host)
+            host_index = host_index  +1
+            host = self.addHost('s{}h{}'.format (switch_index+1, host_index+1))
+            print("Added next pub host", host)
             self.addLink(host, self.ps_switches[switch_index], delay='1ms')
             print("Added link between ", host, " and switch ", self.ps_switches[switch_index])
             self.ps_hosts.append (host)
@@ -61,8 +65,8 @@ class PS_Topo (Topo):
         switch_index = (switch_index + 1) % Racks
         for h in range (S):
             host_index = host_index +1 
-            host = self.addHost('h{}s{}'.format (host_index+1, switch_index+1))
-            print("Added next reduce host", host)
+            host = self.addHost('s{}h{}'.format (switch_index+1, host_index+1))
+            print("Added next sub host", host)
             self.addLink(host, self.ps_switches[switch_index], delay='1ms')
             print("Added link between ", host, " and switch ", self.ps_switches[switch_index])
             self.ps_hosts.append (host)

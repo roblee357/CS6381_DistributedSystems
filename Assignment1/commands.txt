@@ -1,14 +1,13 @@
-h1s1 python3 dsorb.py 1 -b broker_on &> log_discovery_server_OR_broker.out &
-h2s1 python3 publisher.py topic0 1 &> log_pub/log_pub_h2s1.out &
-h3s1 python3 publisher.py topic1 2 &> log_pub/log_pub_h3s1.out &
-h4s1 python3 publisher.py topic2 3 &> log_pub/log_pub_h4s1.out &
-h5s1 python3 subscriber.py topic1 1 &> log_sub/log_sub_h5s1.out &
-h6s1 python3 subscriber.py topic2 2 &> log_sub/log_sub_h6s1.out &
-h7s1 python3 subscriber.py topic0 3 &> log_sub/log_sub_h7s1.out &
-h8s1 python3 subscriber.py topic1 4 &> log_sub/log_sub_h8s1.out &
-h9s1 python3 subscriber.py topic2 5 &> log_sub/log_sub_h9s1.out &
-h10s1 python3 subscriber.py topic0 6 &> log_sub/log_sub_h10s1.out &
-h11s1 python3 subscriber.py topic1 7 &> log_sub/log_sub_h11s1.out &
-h12s1 python3 subscriber.py topic2 8 &> log_sub/log_sub_h12s1.out &
-h13s1 python3 subscriber.py topic0 9 &> log_sub/log_sub_h13s1.out &
-h14s1 python3 subscriber.py topic1 10 &> log_sub/log_sub_h14s1.out &
+s1h1 python3 dsorb.py 1 -b broker_on &> log_discovery_server_OR_broker.out &
+s1h1 python3 dsorb.py 2 -b broker_on &> log_discovery_server_OR_broker.out &
+s1h1 python3 dsorb.py 3 -b broker_on &> log_discovery_server_OR_broker.out &
+s1h4 python3 application_that_publishes.py topic0 1 &> log_pub/log_pub_s1h5.out &
+s1h5 python3 application_that_publishes.py topic1 2 &> log_pub/log_pub_s1h5.out &
+s1h6 python3 application_that_publishes.py topic2 3 &> log_pub/log_pub_s1h5.out &
+s1h7 python3 application_that_subscribes.py topic1 1 &> log_sub/log_sub_s1h7.out &
+s1h8 python3 application_that_subscribes.py topic2 2 &> log_sub/log_sub_s1h8.out &
+s1h9 python3 application_that_subscribes.py topic0 3 &> log_sub/log_sub_s1h9.out &
+s1h10 python3 application_that_subscribes.py topic1 4 &> log_sub/log_sub_s1h10.out &
+s1h11 python3 application_that_subscribes.py topic2 5 &> log_sub/log_sub_s1h11.out &
+s1h12 python3 application_that_subscribes.py topic0 6 &> log_sub/log_sub_s1h12.out &
+s1h13 python3 application_that_subscribes.py topic1 7 &> log_sub/log_sub_s1h13.out &
