@@ -70,14 +70,15 @@ class Subscriber():
         self.zk = zk
         self.zk.start()
         self.context = zmq.Context()
-        self.running = False
+        self.running = True
         
         @zk.DataWatch("/lead_broker")
         def watch_data(data, stat):
-            self.running = False
-            self.waitforsocketcreation = True
+            # self.running = False
+            # self.waitforsocketcreation = True
             print('leader change',data)
-            self.setup_broker()
+            if len(data)>0:
+                self.setup_broker()
         self.setup_broker()
 
     def get_sockets_from_discovery_server(self):
@@ -118,11 +119,12 @@ class Subscriber():
         time.sleep(.1)
         self.waitforsocketcreation = False
         self.running = True
+        print('finished creating socket')
 
     def run(self, override = ''):
-        while self.waitforsocketcreation:
-            time.sleep(.001) 
-            print('waiting for socket mod')
+        # while self.waitforsocketcreation:
+        #     time.sleep(.001) 
+        #     print('waiting for socket mod')
 
         self.i = 0
         if not self.use_broker:
@@ -138,6 +140,7 @@ class Subscriber():
                 response = self.socket.recv_string()
                 return response
         else:
+            print('not running')
             return None
 
 
