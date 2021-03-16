@@ -14,6 +14,8 @@ from multiprocessing.pool import ThreadPool
 import configurator
 import getIP
 from kazoo.client import KazooClient
+from threading import Thread
+from timeout import timeout
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -75,8 +77,8 @@ class Subscriber():
         @zk.DataWatch("/lead_broker")
         def watch_data(data, stat):
             print('leader change',data)
+            time.sleep(1)
             if len(data)>0:
-                self.setup_broker()
                 self.setup_broker()
 
         # self.setup_broker()
@@ -115,8 +117,8 @@ class Subscriber():
         self.running = True
         print('finished creating socket')
 
-    def run(self, override = ''):
-
+    @timeout(3)
+    def get(self):
         self.i = 0
         if not self.use_broker:
             while self.socket == None:
@@ -126,15 +128,13 @@ class Subscriber():
                 self.get_sockets_from_discovery_server()
         if self.running:
             socks = dict(self.poller.poll())
-            # print('socks',socks)
-            if self.socket in socks and socks[self.socket] == zmq.POLLIN:
+            print('socks',socks)
+            if self.socket in socks:# and socks[self.socket] == zmq.POLLIN:
                 response = self.socket.recv_string()
                 return response
         else:
             print('not running')
             return None
-
-
             
 def main():
     args = parseCmdLineArgs ()
@@ -144,7 +144,10 @@ def main():
     start_time = datetime.now()
     last_time = start_time
     while True:
-        reply = sub1.run()
+        try:
+            reply = sub1.get()
+        except:
+            print('timeout')
         now = datetime.now()
         elapsed_time = str((now - start_time))
         cycle_time = str((now - last_time))

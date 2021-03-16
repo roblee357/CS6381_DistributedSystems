@@ -113,7 +113,7 @@ def main ():
         #     fout.write(str(i) + ',' + current_time + '\n')
         print(str(i) + ',' + current_time)
         sys.stdout.flush()
-        time.sleep(.5)
+        time.sleep(2)
 
 
 #----------------------------------------------
