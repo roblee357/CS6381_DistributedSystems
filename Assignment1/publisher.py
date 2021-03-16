@@ -53,15 +53,10 @@ class Publisher():
         zk = KazooClient(hosts=self.config['zkip']+':2181')
         self.zk = zk
         self.zk.start()
-        @zk.ChildrenWatch("/")
-        def watch_children(children):
-            print('child change',children)
-            if 'lead_broker' in children:
-                leader = self.zk.get_children("/lead_broker")
-                print('leader',leader)
-                if 'broker' in leader[0]:
-                    print('broker in children')
-                    self.setup_broker()
+        @zk.DataWatch("/lead_broker")
+        def watch_data(data, stat):
+            print('leader change',data)
+            self.setup_broker()
         self.setup_broker()
 
     def setup_broker(self):

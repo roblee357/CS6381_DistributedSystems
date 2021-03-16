@@ -69,15 +69,14 @@ class Subscriber():
         zk = KazooClient(hosts=self.config['zkip']+':2181')
         self.zk = zk
         self.zk.start()
+        self.context = zmq.Context()
+        self.running = False
         
         @zk.DataWatch("/lead_broker")
         def watch_data(data, stat):
+            self.running = False
+            self.waitforsocketcreation = True
             print('leader change',data)
-            # if 'lead_broker' in children:
-            #     leader = self.zk.get_children("/lead_broker")
-            #     print('leader',leader)
-            #     if 'broker' in leader[0]:
-            #         print('broker in children')
             self.setup_broker()
         self.setup_broker()
 
@@ -102,12 +101,13 @@ class Subscriber():
                 print(dicts)
 
     def createSocket(self):
-        try:
-            self.socket.close()
-            print('closed socket')
-        except:
-            print('could not close socket')
-        self.context = zmq.Context()
+        # try:
+        #     self.socket.close()
+        #     # self.poller = None
+        #     print('closed socket and poller')
+        # except:
+        #     print('could not close socket')
+        
         self.socket = self.context.socket(zmq.SUB)
         self.topicfilter = str.encode(self.topic)
         self.socket.connect(self.con_str)
@@ -115,16 +115,15 @@ class Subscriber():
             # Initialize poll set
         self.poller = zmq.Poller()
         self.poller.register(self.socket, zmq.POLLIN)
-
-    def listen(self, socket):
-        while True:
-            # print('waiting for message')
-            message = socket.recv()
-            if len(message)>0:
-                return message
+        time.sleep(.1)
+        self.waitforsocketcreation = False
+        self.running = True
 
     def run(self, override = ''):
-    
+        while self.waitforsocketcreation:
+            time.sleep(.001) 
+            print('waiting for socket mod')
+
         self.i = 0
         if not self.use_broker:
             while self.socket == None:
@@ -132,17 +131,15 @@ class Subscriber():
                 self.i += 1
                 time.sleep(1)
                 self.get_sockets_from_discovery_server()
-        # # TODO Checking lead could be done in another thread periodically instead of every message.
-        # if self.lead_broker == self.zk.get_children("/lead_broker")[0]:
-        try:
+        if self.running:
             socks = dict(self.poller.poll())
             print('socks',socks)
             if self.socket in socks and socks[self.socket] == zmq.POLLIN:
                 response = self.socket.recv_string()
                 return response
-        except:
+        else:
             return None
-        # else:
+
 
             
 def main():
@@ -164,8 +161,10 @@ def main():
         else:
             print('reply none type')
             line_out = 'None'
+            time.sleep(1)
         print(line_out)
         sys.stdout.flush()
+    print('exited')
 
 #----------------------------------------------
 if __name__ == '__main__':
