@@ -74,12 +74,12 @@ class Subscriber():
         
         @zk.DataWatch("/lead_broker")
         def watch_data(data, stat):
-            # self.running = False
-            # self.waitforsocketcreation = True
             print('leader change',data)
             if len(data)>0:
                 self.setup_broker()
-        self.setup_broker()
+                self.setup_broker()
+
+        # self.setup_broker()
 
     def get_sockets_from_discovery_server(self):
             print('initiating discovery client connection')
@@ -102,18 +102,12 @@ class Subscriber():
                 print(dicts)
 
     def createSocket(self):
-        # try:
-        #     self.socket.close()
-        #     # self.poller = None
-        #     print('closed socket and poller')
-        # except:
-        #     print('could not close socket')
         
         self.socket = self.context.socket(zmq.SUB)
         self.topicfilter = str.encode(self.topic)
         self.socket.connect(self.con_str)
         self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
-            # Initialize poll set
+        # Initialize poll set
         self.poller = zmq.Poller()
         self.poller.register(self.socket, zmq.POLLIN)
         time.sleep(.1)
@@ -122,9 +116,6 @@ class Subscriber():
         print('finished creating socket')
 
     def run(self, override = ''):
-        # while self.waitforsocketcreation:
-        #     time.sleep(.001) 
-        #     print('waiting for socket mod')
 
         self.i = 0
         if not self.use_broker:
@@ -135,7 +126,7 @@ class Subscriber():
                 self.get_sockets_from_discovery_server()
         if self.running:
             socks = dict(self.poller.poll())
-            print('socks',socks)
+            # print('socks',socks)
             if self.socket in socks and socks[self.socket] == zmq.POLLIN:
                 response = self.socket.recv_string()
                 return response

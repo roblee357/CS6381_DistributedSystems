@@ -57,7 +57,7 @@ class Publisher():
         def watch_data(data, stat):
             print('leader change',data)
             self.setup_broker()
-        self.setup_broker()
+        # self.setup_broker()
 
     def setup_broker(self):
         self.lead_broker = self.zk.get_children("/lead_broker")[0]

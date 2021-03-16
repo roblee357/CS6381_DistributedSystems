@@ -36,12 +36,12 @@ class ZK:
     def checkIfLeader(self):
         curTime = round(time.time()*1000)
         lead_broker, znode_stats = self.zk.get("/lead_broker")
-        print('lead_broker',lead_broker, 'znode_stats ', znode_stats)
+        # print('lead_broker',lead_broker, 'znode_stats ', znode_stats)
         lead_broker_mtime = znode_stats[3]
-        print('lead_broker_mtime',lead_broker_mtime)
+        # print('lead_broker_mtime',lead_broker_mtime)
         lead_broker_age = curTime - lead_broker_mtime
         lead_broker_name = 'broker_' + lead_broker.decode('utf-8')
-        print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
+        # print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
         brokers = self.zk.get_children("/brokers")
         if not lead_broker_name in brokers:
             print('broker not listed. Claiming lead',lead_broker_name, brokers)
