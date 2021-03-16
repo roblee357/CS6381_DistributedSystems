@@ -62,7 +62,8 @@ class Subscriber():
 
     def __init__(self, args):
         self.topic = args.topic
-        self.contextid = args.id
+        # self.context
+        self.id = args.id
         self.ip = getIP.get() #ip
         self.config = configurator.load()
         self.socket = None

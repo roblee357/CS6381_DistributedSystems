@@ -153,7 +153,7 @@ def genCommandsFile (hosts, args):
         #cmd_str = hosts[0].name + " python3 mr_wordcount.py -p " + str (args.masterport) + " -m " + str (args.map) + " -r " + str (args.reduce) + " " + args.datafile + " &> " + hosts[0].name + ".out &\n"
         #cmds.write (cmd_str)
         # h1 python3 discovery_server_OR_broker.py -b brokerless &>> t1_discovery_server_OR_broker.out &
-        cmd_str = hosts[0].name + " python3 discovery_server_OR_broker.py -b " + args.brokermode + " &> log_discovery_server_OR_broker.out &\n"
+        cmd_str = hosts[0].name + " python3 dsorb.py 1 -b " + args.brokermode + " &> log_discovery_server_OR_broker.out &\n"
         cmds.write (cmd_str)
 
         #  next create the command for the map workers

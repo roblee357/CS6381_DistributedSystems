@@ -1,4 +1,4 @@
-h1s1 python3 discovery_server_OR_broker.py -b broker_on &> log_discovery_server_OR_broker.out &
+h1s1 python3 dsorb.py 1 -b broker_on &> log_discovery_server_OR_broker.out &
 h2s1 python3 publisher.py topic0 1 &> log_pub/log_pub_h2s1.out &
 h3s1 python3 publisher.py topic1 2 &> log_pub/log_pub_h3s1.out &
 h4s1 python3 publisher.py topic2 3 &> log_pub/log_pub_h4s1.out &

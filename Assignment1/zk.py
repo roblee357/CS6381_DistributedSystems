@@ -27,7 +27,7 @@ class ZK:
         while True:
             heartbeat = str(time.time()).encode('utf-8')
             self.zk.set(self.b_path,heartbeat)
-            time.sleep(.05)
+            time.sleep(config['broker_heartrate'])
 
     def start_heartbeat(self):
         t = Thread(target=self.heartbeat)

@@ -30,20 +30,24 @@ print('hello now')
 
 
 print('starting analysis')
-logs = glob.glob('log_sub/log_sub_h*.out')
+logs = glob.glob('log_sub/' + 'log_sub_h*.out')
 TAG = "# starting loop"
+print('logs',logs)
 for log in logs:
-    clog = 'cleaned/cleaned_' + log
+    
+    clog = 'cleaned/cleaned_' + log.split('/')[1]
+    print('log',log,'clog',clog)
     tag_found = False
-    with open(log) as in_file:
-        print('log', log)
+    with open( log) as in_file:
         with open(clog, 'w') as out_file:
             for line in in_file:
-                if not tag_found:
-                    if line.strip() == TAG:
-                        tag_found = True
-                else:
+                if 'topic' in line[:5]:
+                # if not tag_found:
+                #     if line.strip() == TAG:
+                #         tag_found = True
+                # else:
                     out_file.write(line)
+    
     df = pd.read_csv(clog,header=None, comment = '#',names=["topic", "type", "ID", "mesg No.", "pub time","recv time","prog time", "loop time"])
     # df['pub time'] = df['pub time'].apply(lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f'))
     # df['recv time'] = df['recv time'].apply(lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f'))
@@ -78,10 +82,10 @@ for log in logs:
         plt.title('Message Transit Time (s)')
         plt.ylabel('Time (s)')
         plt.xlabel('Message Number')
-        plt.savefig( 'end-to-end/' + log + '_end-to-end.png')
+        plt.savefig( 'end-to-end/' + log.split('/')[1] + '_end-to-end.png')
     except Exception as e:
         print(e)
-        print(df['loop time'])
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(exc_type, fname, exc_tb.tb_lineno)
+        # print(df['loop time'])
+        # exc_type, exc_obj, exc_tb = sys.exc_info()
+        # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        # print(exc_type, fname, exc_tb.tb_lineno)

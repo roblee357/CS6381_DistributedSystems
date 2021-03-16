@@ -1,4 +1,5 @@
 {
+    "broker_heartrate": 0.05,
     "broker_timeout": 1300,
     "dip": "10.0.0.1",
     "disc_port": "5557",
@@ -8,6 +9,5 @@
     "sub_port": "5556",
     "use_broker": true,
     "zkip": "10.0.2.15",
-    "zkip_home": "172.17.0.1",
-    "broker_heartrate": 0.05
+    "zkip_home": "172.17.0.1"
 }
