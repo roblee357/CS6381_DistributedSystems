@@ -77,7 +77,7 @@ class Subscriber():
         @zk.DataWatch("/lead_broker")
         def watch_data(data, stat):
             print('leader change',data)
-            time.sleep(1)
+            # time.sleep(1)
             if len(data)>0:
                 self.setup_broker()
 
@@ -128,7 +128,7 @@ class Subscriber():
                 self.get_sockets_from_discovery_server()
         if self.running:
             socks = dict(self.poller.poll())
-            print('socks',socks)
+            # print('socks',socks)
             if self.socket in socks:# and socks[self.socket] == zmq.POLLIN:
                 response = self.socket.recv_string()
                 return response
@@ -147,6 +147,7 @@ def main():
         try:
             reply = sub1.get()
         except:
+            reply = None
             print('timeout')
         now = datetime.now()
         elapsed_time = str((now - start_time))
