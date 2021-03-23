@@ -54,7 +54,7 @@ class ZK:
                 print(lead_broker_name, broker, broker_data,mtime)
                 if broker == lead_broker_name:
                     leader_age = curTime - mtime
-                    if leader_age > self.config["leader_timeout"]
+                    if leader_age > self.config["leader_timeout"]:
                         print('Leader is old. Let\'s get rid of they.', leader_age)
                         self.claim_lead()
                     else:
