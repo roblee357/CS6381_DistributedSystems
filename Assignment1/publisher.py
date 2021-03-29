@@ -15,6 +15,7 @@ import configurator
 from kazoo.client import KazooClient
 import getIP
 import watchers
+import random
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -35,49 +36,70 @@ def parseCmdLineArgs ():
     # parse the command line
     parser = argparse.ArgumentParser ()
     # add optional arguments
-    parser.add_argument ("-m", "--mes", default='Hello World',help="The Message")
+    parser.add_argument ("-o", "--ownership", default=str(round(random.uniform(0, 1),3)),help="Ownership. Default: random.uniform(0,1)")
+    parser.add_argument ("-his", "--history",  default=10, help="Ownership. Default: random.uniform(0,1)")
+
+
+
     # parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
     # add positional arguments in that order
     parser.add_argument ("topic", help="Topic")
     parser.add_argument ("id", help="ID")
+    # parser.add_argument ("ownership", help="Ownership")
+    # parser.add_argument ("history", help="History")
     # parse the args
     args = parser.parse_args ()
     return args
 
 class Publisher():
 
-    def __init__(self, topic,pub_id):
-        self.pub_id = pub_id
-        self.topic = topic
+    def __init__(self, args):
+        self.args = args
+        self.ip = getIP.get()
         self.config = configurator.load()
         zk = KazooClient(hosts=self.config['zkip']+':2181')
         self.zk = zk
         self.zk.start()
-        @zk.DataWatch("/lead_broker")
+        self.rep_path = "/publishers/pub_" + self.args.id + '/rep_broker/ip/id'
+        self.p_path = "/publishers/pub_" + self.args.id 
+        onshp = self.args.ownership
+        self.zk.ensure_path(self.rep_path)
+        self.pub_tuple = (self.args.id + ',' + self.ip + ',' + self.args.topic + ',' + onshp + ',' + str(self.args.history)).encode('utf-8')
+        self.zk.set(self.p_path,self.pub_tuple)
+        @zk.DataWatch(self.rep_path)
         def watch_data(data, stat):
             print('leader change',data)
             self.setup_broker()
-        # self.setup_broker()
+        
+        
+
 
     def setup_broker(self):
-        self.lead_broker = self.zk.get_children("/lead_broker")[0]
-        self.lead_broker_ip , stat = self.zk.get("/lead_broker/ip")
-        self.lead_broker_ip = self.lead_broker_ip.decode("utf-8")
-        print('lead_broker from zk: ' + self.lead_broker + ' IP: ' + self.lead_broker_ip)
+        id = ''
+        while len(id) == 0:
+            id, znode_stats = self.zk.get(self.rep_path)
+            id = id.decode('utf-8')
+            print('my replicant ID: ' + id)
+            time.sleep(2)
+
+        repli_broker_ip, znode_stats = self.zk.get('/brokers/broker_' + id + '/ip')
+        repli_broker_ip = repli_broker_ip.decode('utf-8')
+
         
-        self.ip = getIP.get() #ip
+        
+        
         self.context = zmq.Context()
         self.use_broker = self.config['use_broker']
     
         if self.use_broker:
-            con_str = "tcp://" + self.lead_broker_ip + ":" + self.config['pub_port']
+            con_str = "tcp://" + repli_broker_ip + ":" + self.config['pub_port']
             print('Using broker @',con_str)
             self.socket = self.context.socket(zmq.PUB)
             self.socket.connect(con_str)
         else:
             # con_str = "tcp://" + self.ip + ":" + config['pub_port']
-            print('Not using broker. Connecting to sdiscovery server @',self.lead_broker_ip)
-            dclient = Dclient('PUB',self.topic,self.pub_id,self.lead_broker_ip,self.ip)
+            print('Not using broker. Connecting to sdiscovery server @',repli_broker_ip)
+            dclient = Dclient('PUB',self.args.topic,self.args.id,repli_broker_ip,self.ip)
             for i in range(1):
                 discovery_server_response = dclient.broadcast()
             print('discovery_server_response',discovery_server_response)
@@ -91,7 +113,7 @@ class Publisher():
         time.sleep(2)
 
     def send(self, message):
-        message =  self.topic + ' ,PUB,' + str(self.pub_id) + ',' + message
+        message =  self.args.topic + ' ,PUB,' + str(self.args.id) + ',' + message
         # print('sending',message)
         self.socket.send_string(message)
         # if self.use_broker:
@@ -103,8 +125,8 @@ class Publisher():
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
-    args = parseCmdLineArgs ()
-    pub1 = Publisher(args.topic,args.id)
+    args = parseCmdLineArgs()
+    pub1 = Publisher(args)
     for i in range(20000):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S.%f")

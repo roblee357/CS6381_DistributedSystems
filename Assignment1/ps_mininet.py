@@ -16,7 +16,7 @@ import argparse   # for command line parsing
 from signal import SIGINT
 from time import time
 
-import subprocess
+import subprocess, random
 
 # These are all Mininet-specific
 from mininet.topo import Topo
@@ -161,7 +161,7 @@ def genCommandsFile (hosts, args):
         #  next create the command for the map workers
         k =  args.bkr
         for i in range (args.pub):
-            cmd_str = hosts[k+i].name + " python3 application_that_publishes.py topic" + str((i) % args.sub) + ' ' + str(i+1) + " &> log_pub/log_pub_" + hosts[k+1].name + ".out &\n"
+            cmd_str = hosts[k+i].name + " python3 application_that_publishes.py topic" + str((i) % args.sub) + ' ' + str(i+1) + " " + str(round(random.uniform(0,1),3)) + " 10 &> log_pub/log_pub_" + hosts[i+1].name + ".out &\n"
             cmds.write (cmd_str)
 
         #  next create the command for the reduce workers

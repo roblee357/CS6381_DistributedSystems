@@ -118,7 +118,7 @@ class Subscriber():
         self.running = True
         print('finished creating socket')
 
-    @timeout(3)
+    @timeout(2)
     def get(self):
         self.i = 0
         if not self.use_broker:

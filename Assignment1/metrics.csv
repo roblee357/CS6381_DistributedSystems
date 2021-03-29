@@ -277,3 +277,10 @@ log_sub/log_sub_h6s1.out,0.0178,0.02197,0.0295
 log_sub/log_sub_h7s1.out,0.01857,0.0226,0.03438
 log_sub/log_sub_h8s1.out,0.01936,0.02286,0.03027
 log_sub/log_sub_h9s1.out,0.01894,0.02312,0.02744
+log_sub/log_sub_s1h8.out,0.52721,0.74361,0.90467
+log_sub/log_sub_s1h11.out,0.07363,0.09358,0.11567
+log_sub/log_sub_s1h10.out,0.07662,0.09028,0.11267
+log_sub/log_sub_s1h13.out,0.07685,0.0909,0.11486
+log_sub/log_sub_s1h12.out,0.08375,0.09986,0.11461
+log_sub/log_sub_s1h9.out,0.08163,0.096,0.11661
+log_sub/log_sub_s1h7.out,0.07436,0.09148,0.12331

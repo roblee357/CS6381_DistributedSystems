@@ -3,6 +3,8 @@ import configurator
 from kazoo.client import KazooClient   
 import argparse 
 from threading import Thread
+import numpy as np
+import math
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -20,7 +22,8 @@ class ZK:
         self.zk = KazooClient(hosts= config['zkip']+':2181')
         self.zk.start()
         self.b_path = "/brokers/broker_" + self.args.id 
-        self.ip_path = self.b_path + "/" + self.ip
+        self.ip_path = self.b_path + "/ip/" + self.ip
+        self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
         self.zk.ensure_path(self.ip_path)
         self.zk.ensure_path("/lead_broker/ip")
 
@@ -33,6 +36,63 @@ class ZK:
     def start_heartbeat(self):
         t = Thread(target=self.heartbeat)
         t.start()  
+
+    def get_topics(self):
+        self.pub_dict = {}
+        self.topics = {}
+        publishers = self.zk.get_children("/publishers")
+        for pub in publishers:
+            self.pub_dict[pub] = {}
+            data, zstat = self.zk.get("/publishers/" + pub)
+
+            self.pub_dict[pub] = data.decode('utf-8')
+            data_list = self.pub_dict[pub].split(',')
+            if data_list[2] not in self.topics:
+                self.topics[data_list[2]] = [pub]
+            else:
+                self.topics[data_list[2]].append(pub)
+        print('pub_dict',self.pub_dict, 'topics', self.topics)
+
+    def broker_replication_order(self):
+        brokers = self.zk.get_children("/brokers")
+        self.broker_order = []
+        for broker in brokers:
+            hb_time, znode_stats = self.zk.get("/brokers/" + broker)
+            self.broker_order.append([broker,float(hb_time.decode('utf-8'))])
+            
+            print('broker',broker, hb_time.decode('utf-8'))
+        self.broker_order.sort(key=lambda x: x[1])
+        print('self.broker_order',self.broker_order)
+
+
+    def assign_broker(self):
+        self.broker_replication_order()
+
+        for topic in self.topics:
+            broker_assignments = np.ceil((np.array(range(len(self.topics[topic])))+1)/self.config['load_topics_per_broker']).astype(int)
+            print(broker_assignments, 'broker requirement', max(broker_assignments))
+            i = 0
+            for pub in self.topics[topic]: 
+                print(topic, pub)
+                rep_path = "/publishers/" + pub + '/rep_broker/ip/id'
+                self.zk.ensure_path(rep_path)
+                self.zk.set(rep_path,str(self.broker_order[broker_assignments[i]][0]).encode('utf-8'))
+                i += 1
+
+
+
+
+
+    def load_ballance(self):
+        while True:
+            topics = self.get_topics()
+            heartbeat = str(time.time()).encode('utf-8')
+            self.zk.set(self.b_path,heartbeat)
+            time.sleep(self.config['load_ballance_rate'])
+
+    def start_load_ballancing(self):
+        t = Thread(target=self.load_ballance)
+        t.start() 
 
     def checkIfLeader(self):
         curTime = round(time.time()*1000)
@@ -83,11 +143,12 @@ def main():
     ip = '10.0.0.' + args.id
     config = configurator.load()
     zk = ZK(args, config, ip)
-    zk.start_heartbeat()
-    # zk.claim_lead()
-    zk.checkIfLeader()
-    zk.start_leader_checks()
-    print('done')
+    zk.get_topics()
+    zk.assign_broker()
+    # zk.start_heartbeat()
+    # # zk.claim_lead()
+    # zk.checkIfLeader()
+    # zk.start_leader_checks()
 
 #----------------------------------------------
 if __name__ == '__main__':

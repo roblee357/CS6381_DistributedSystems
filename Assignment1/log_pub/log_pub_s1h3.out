@@ -1,0 +1,53 @@
+hello now
+leader change None
+
+Traceback (most recent call last):
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 162, in _log_func_exception
+    result = self._func(data, stat, event)
+TypeError: watch_data() takes 2 positional arguments but 3 were given
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 164, in _log_func_exception
+    result = self._func(data, stat)
+  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/publisher.py", line 66, in watch_data
+    self.setup_broker()
+  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/publisher.py", line 76, in setup_broker
+    self.lead_broker = self.zk.get_children("/lead_broker")[0]
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/client.py", line 1219, in get_children
+    include_data=include_data).get()
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/handlers/utils.py", line 75, in get
+    raise self._exception
+kazoo.exceptions.NoNodeError
+Traceback (most recent call last):
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 162, in _log_func_exception
+    result = self._func(data, stat, event)
+TypeError: watch_data() takes 2 positional arguments but 3 were given
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "application_that_publishes.py", line 29, in <module>
+    main ()
+  File "application_that_publishes.py", line 18, in main
+    pub1 = publisher.Publisher(args)
+  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/publisher.py", line 63, in __init__
+    @zk.DataWatch("/lead_broker")
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 152, in __call__
+    self._get_data()
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 37, in wrapper
+    return func(*args, **kwargs)
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 206, in _get_data
+    self._log_func_exception(data, stat, event)
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 164, in _log_func_exception
+    result = self._func(data, stat)
+  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/publisher.py", line 66, in watch_data
+    self.setup_broker()
+  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/publisher.py", line 76, in setup_broker
+    self.lead_broker = self.zk.get_children("/lead_broker")[0]
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/client.py", line 1219, in get_children
+    include_data=include_data).get()
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/handlers/utils.py", line 75, in get
+    raise self._exception
+kazoo.exceptions.NoNodeError
