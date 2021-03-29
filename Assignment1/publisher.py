@@ -82,7 +82,7 @@ class Publisher():
             print('my replicant ID: ' + id)
             time.sleep(2)
 
-        repli_broker_ip, znode_stats = self.zk.get('/brokers/broker_' + id + '/ip')
+        repli_broker_ip, znode_stats = self.zk.get('/brokers/' + id + '/ip')
         repli_broker_ip = repli_broker_ip.decode('utf-8')
 
         

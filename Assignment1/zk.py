@@ -76,7 +76,11 @@ class ZK:
                 print(topic, pub)
                 rep_path = "/publishers/" + pub + '/rep_broker/ip/id'
                 self.zk.ensure_path(rep_path)
-                self.zk.set(rep_path,str(self.broker_order[broker_assignments[i]][0]).encode('utf-8'))
+                broker_name = self.broker_order[broker_assignments[i]][0]
+                ip, znode_stats = self.zk.get('/brokers/' + broker_name + '/ip')
+                self.zk.set("/publishers/" + pub + '/rep_broker/ip',ip)
+                self.zk.set(rep_path,str(broker_name).encode('utf-8'))
+
                 i += 1
 
 
