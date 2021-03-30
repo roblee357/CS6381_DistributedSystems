@@ -27,6 +27,7 @@ from mininet.net import CLI
 from mininet.util import dumpNodeConnections
 from mininet.log import setLogLevel, info
 from mininet.util import pmonitor
+from system_test import SystemTest
 
 # This is our topology class created specially for Mininet
 from ps_topology import PS_Topo
@@ -155,7 +156,7 @@ def genCommandsFile (hosts, args):
         #cmds.write (cmd_str)
         # h1 python3 discovery_server_OR_broker.py -b brokerless &>> t1_discovery_server_OR_broker.out &
         for i in range (args.bkr):
-            cmd_str = hosts[0].name + " python3 dsorb.py "  + str(i+1) + " -b " + args.brokermode  + " &> log_discovery_server_OR_broker.out &\n"
+            cmd_str = hosts[i].name + " python3 dsorb.py "  + str(i+1) + " -b " + args.brokermode  + " &> log_broker/broker_"  + str(i+1) + ".out &\n"
             cmds.write (cmd_str)
 
         #  next create the command for the map workers
@@ -217,6 +218,9 @@ def main ():
     print("Generating commands file to be sourced")
     genCommandsFile (net.hosts, parsed_args)
 
+    # net.host('s1h1').cmd
+    SystemTest(net)
+
     # run the cli
     CLI (net)
 
@@ -229,6 +233,10 @@ def main ():
     # If there are errors in running the python code, these will also
     # show up in the *.out files.
     
+    
+
+
+
     # cleanup
     net.stop ()
 

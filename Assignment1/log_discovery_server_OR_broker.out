@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "dsorb.py", line 11, in <module>
-    from zk import ZK
-  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/zk.py", line 40
-    for each pub in publishers:
-               ^
-SyntaxError: invalid syntax

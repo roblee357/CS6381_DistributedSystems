@@ -1,0 +1,1 @@
+self.lead_broker = self.zk.get_children("/lead_broker")[0]

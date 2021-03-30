@@ -1,40 +1,17 @@
-leader change None
-object of type 'NoneType' has no len()
-Traceback (most recent call last):
-  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 162, in _log_func_exception
-    result = self._func(data, stat, event)
-TypeError: watch_data() takes 2 positional arguments but 3 were given
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 164, in _log_func_exception
-    result = self._func(data, stat)
-  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/subscriber.py", line 82, in watch_data
-    if len(data)>0:
-TypeError: object of type 'NoneType' has no len()
-Traceback (most recent call last):
-  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 162, in _log_func_exception
-    result = self._func(data, stat, event)
-TypeError: watch_data() takes 2 positional arguments but 3 were given
-
-During handling of the above exception, another exception occurred:
-
+Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
+Failed connecting to Zookeeper within the connection retry policy.
 Traceback (most recent call last):
   File "application_that_subscribes.py", line 69, in <module>
     main ()
   File "application_that_subscribes.py", line 41, in main
     sub1 = Subscriber(args)
-  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/subscriber.py", line 78, in __init__
-    @zk.DataWatch("/lead_broker")
-  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 152, in __call__
-    self._get_data()
-  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 37, in wrapper
-    return func(*args, **kwargs)
-  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 206, in _get_data
-    self._log_func_exception(data, stat, event)
-  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/recipe/watchers.py", line 164, in _log_func_exception
-    result = self._func(data, stat)
-  File "/home/rob/Desktop/CS6381_DistributedSystems/Assignment1/subscriber.py", line 82, in watch_data
-    if len(data)>0:
-TypeError: object of type 'NoneType' has no len()
+  File "/media/sf_VirtualBoxShare/CS6381_DistributedSystems/Assignment1/subscriber.py", line 74, in __init__
+    self.zk.start()
+  File "/home/rob/.local/lib/python3.6/site-packages/kazoo/client.py", line 635, in start
+    raise self.handler.timeout_exception("Connection time-out")
+kazoo.handlers.threading.KazooTimeoutError: Connection time-out

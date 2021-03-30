@@ -19,13 +19,17 @@ class ZK:
         self.args = args
         self.ip = ip
         self.config = config
-        self.zk = KazooClient(hosts= config['zkip']+':2181')
+        self.zk_con_str = config['zkip']+':2181'
+        print('connecting to ZK:' , self.zk_con_str)
+        self.zk = KazooClient(hosts= self.zk_con_str)
         self.zk.start()
         self.b_path = "/brokers/broker_" + self.args.id 
         self.ip_path = self.b_path + "/ip/" + self.ip
-        self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
         self.zk.ensure_path(self.ip_path)
+
+        self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
         self.zk.ensure_path("/lead_broker/ip")
+        self.zk.ensure_path("/publishers")
 
     def heartbeat(self):
         while True:
@@ -58,7 +62,9 @@ class ZK:
         self.broker_order = []
         for broker in brokers:
             hb_time, znode_stats = self.zk.get("/brokers/" + broker)
-            self.broker_order.append([broker,float(hb_time.decode('utf-8'))])
+            hb_str_time = hb_time.decode('utf-8')
+            print('hb_str_time',hb_str_time)
+            self.broker_order.append([broker,float(hb_str_time)])
             
             print('broker',broker, hb_time.decode('utf-8'))
         self.broker_order.sort(key=lambda x: x[1])
@@ -147,6 +153,7 @@ def main():
     ip = '10.0.0.' + args.id
     config = configurator.load()
     zk = ZK(args, config, ip)
+    zk.start_heartbeat()
     zk.get_topics()
     zk.assign_broker()
     # zk.start_heartbeat()
