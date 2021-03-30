@@ -7,6 +7,8 @@ Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
 Failed connecting to Zookeeper within the connection retry policy.
+TConnection dropped: socket connection error: Network is unreachable
+Failed connecting to Zookeeper within the connection retry policy.
 Traceback (most recent call last):
   File "application_that_publishes.py", line 29, in <module>
     main ()

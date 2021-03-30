@@ -222,7 +222,7 @@ def main ():
     SystemTest(net)
 
     # run the cli
-    CLI (net)
+    # CLI (net)
 
     # @NOTE@
     # You should run the generated commands by going to the
@@ -232,15 +232,17 @@ def main ():
     # You can look at the *.out files which have all the debugging data
     # If there are errors in running the python code, these will also
     # show up in the *.out files.
+
+    return net
     
     
 
 
 
     # cleanup
-    net.stop ()
+    # net.stop ()
 
 if __name__ == '__main__':
     # Tell mininet to print useful information
     setLogLevel('info')
-    main ()
+    net = main ()

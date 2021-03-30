@@ -5,6 +5,7 @@ Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
 Failed connecting to Zookeeper within the connection retry policy.
 Instantiating the broker or discovery server
 connecting to ZK: 10.0.2.15:2181
@@ -19,6 +20,4 @@ Traceback (most recent call last):
     self.zk.start()
   File "/home/rob/.local/lib/python3.6/site-packages/kazoo/client.py", line 635, in start
     raise self.handler.timeout_exception("Connection time-out")
-kazoo.handlers.threading.KazooTimeoutError: Connection time-out
-t")
 kazoo.handlers.threading.KazooTimeoutError: Connection time-out

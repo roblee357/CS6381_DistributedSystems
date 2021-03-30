@@ -1,9 +1,9 @@
 s1h1 python3 dsorb.py 1 -b broker_on &> log_broker/broker_1.out &
 s1h2 python3 dsorb.py 2 -b broker_on &> log_broker/broker_2.out &
 s1h3 python3 dsorb.py 3 -b broker_on &> log_broker/broker_3.out &
-s1h4 python3 application_that_publishes.py topic0 1 0.146 10 &> log_pub/log_pub_s1h2.out &
-s1h5 python3 application_that_publishes.py topic1 2 0.371 10 &> log_pub/log_pub_s1h3.out &
-s1h6 python3 application_that_publishes.py topic2 3 0.118 10 &> log_pub/log_pub_s1h4.out &
+s1h4 python3 application_that_publishes.py topic0 1 0.059 10 &> log_pub/log_pub_s1h2.out &
+s1h5 python3 application_that_publishes.py topic1 2 0.307 10 &> log_pub/log_pub_s1h3.out &
+s1h6 python3 application_that_publishes.py topic2 3 0.952 10 &> log_pub/log_pub_s1h4.out &
 s1h7 python3 application_that_subscribes.py topic1 1 &> log_sub/log_sub_s1h7.out &
 s1h8 python3 application_that_subscribes.py topic2 2 &> log_sub/log_sub_s1h8.out &
 s1h9 python3 application_that_subscribes.py topic0 3 &> log_sub/log_sub_s1h9.out &
