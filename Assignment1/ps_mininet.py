@@ -219,10 +219,10 @@ def main ():
     genCommandsFile (net.hosts, parsed_args)
 
     # net.host('s1h1').cmd
-    SystemTest(net)
+    # SystemTest(net)
 
     # run the cli
-    # CLI (net)
+    CLI (net)
 
     # @NOTE@
     # You should run the generated commands by going to the
@@ -233,14 +233,14 @@ def main ():
     # If there are errors in running the python code, these will also
     # show up in the *.out files.
 
-    return net
+    # return net
     
     
 
 
 
     # cleanup
-    # net.stop ()
+    net.stop ()
 
 if __name__ == '__main__':
     # Tell mininet to print useful information

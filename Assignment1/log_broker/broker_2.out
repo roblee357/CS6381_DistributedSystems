@@ -5,13 +5,19 @@ Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
 Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
+Connection dropped: socket connection error: Network is unreachable
 Failed connecting to Zookeeper within the connection retry policy.
+Instantiating the broker or discovery server
+connecting to ZK: 10.0.2.15:2181
 Traceback (most recent call last):
-  File "application_that_subscribes.py", line 69, in <module>
+  File "dsorb.py", line 63, in <module>
     main ()
-  File "application_that_subscribes.py", line 41, in main
-    sub1 = Subscriber(args)
-  File "/media/sf_VirtualBoxShare/CS6381_DistributedSystems/Assignment1/subscriber.py", line 74, in __init__
+  File "dsorb.py", line 59, in main
+    bords = BorDS(args)
+  File "dsorb.py", line 31, in __init__
+    zk = ZK(args, self.config, self.IP)
+  File "/media/sf_VirtualBoxShare/CS6381_DistributedSystems/Assignment1/zk.py", line 25, in __init__
     self.zk.start()
   File "/home/rob/.local/lib/python3.6/site-packages/kazoo/client.py", line 635, in start
     raise self.handler.timeout_exception("Connection time-out")
