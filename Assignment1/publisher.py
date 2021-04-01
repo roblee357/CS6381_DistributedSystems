@@ -79,9 +79,13 @@ class Publisher():
         def watch_data(data, stat):
             print('publisher change',data)        
             self.get_broker()
-
+        @zk.ChildrenWatch('/brokers')
+        def my_func(children):
+            print('woah, something changed with el broker noderino')
+            self.get_broker()
 
     def get_broker(self):
+        
         topics = self.zk.get_children('/topics')
         
         pub_data = (self.args.ownership + ',' + str(self.args.history)).encode('utf-8')
@@ -107,25 +111,18 @@ class Publisher():
             while broker_cnt == 0:
                 brokers = self.zk.get_children('/broker_order')
                 broker_cnt = len(brokers)
-                print('waiting for broker to start...')
-                time.sleep(2)
+                if broker_cnt == 0:
+                    print('waiting for broker to start...')
+                    time.sleep(2)
             print('broker_requirement',broker_requirement,'brokers',brokers)
             assigned_broker_num = str(brokers[broker_requirement-1])
             assigned_broker, znode_stats = self.zk.get('/broker_order/' + assigned_broker_num)
             assigned_broker = assigned_broker.decode('utf-8')
             print('assigned_broker',assigned_broker)
 
-            broker_ip , znode_stats = self.zk.get('/brokers/' + assigned_broker + '/ip')
+            broker_ip , znode_stats = self.zk.get('/brokers/' + assigned_broker )
             repli_broker_ip = broker_ip.decode('utf-8')
             self.zk.ensure_path('/topics/'+ self.args.topic + '/' + assigned_broker)
-
-
-
-
-
-
-        
-        
         # id = ''
         # while len(id) == 0:
         #     id, znode_stats = self.zk.get(self.broker_order_path)
@@ -133,8 +130,8 @@ class Publisher():
         #     print('my replicant ID: ' + id)
         #     time.sleep(2)
 
-        repli_broker_ip, znode_stats = self.zk.get('/brokers/' + assigned_broker + '/ip')
-        repli_broker_ip = repli_broker_ip.decode('utf-8')
+        repli_broker_ip, znode_stats = self.zk.get('/brokers/' + assigned_broker)
+        repli_broker_ip = repli_broker_ip.decode('utf-8').split(',')[0]
 
         
         

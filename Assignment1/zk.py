@@ -4,7 +4,7 @@ from kazoo.client import KazooClient
 import argparse 
 from threading import Thread
 import numpy as np
-import math, sys
+import math
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -21,19 +21,17 @@ class ZK:
         self.config = config
         self.zk_con_str = config['zkip']+':2181'
         print('connecting to ZK:' , self.zk_con_str)
-        self.zk = KazooClient(hosts= self.zk_con_str)
+        self.zk = KazooClient(hosts= self.zk_con_str,timeout=1)
         self.zk.start()
         self.b_path = "/brokers/broker_" + self.args.id 
-        self.ip_path = self.b_path + "/ip/" + self.ip
-        self.zk.ensure_path(self.ip_path)
-
-        self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
-        self.zk.ensure_path("/lead_broker/ip")
+        self.zk.delete(self.b_path,recursive=True)
+        print('ip.encode(utf-8)',ip.encode('utf-8'))
+        self.zk.create(self.b_path,value = ip.encode('utf-8'),ephemeral=True)
         self.zk.ensure_path("/publishers")
 
     def heartbeat(self):
         while True:
-            heartbeat = str(time.time()).encode('utf-8')
+            heartbeat = (self.ip + ',' + str(time.time())).encode('utf-8')
             self.zk.set(self.b_path,heartbeat)
             time.sleep(self.config['broker_heartrate'])
 
@@ -64,24 +62,23 @@ class ZK:
             hb_time, znode_stats = self.zk.get("/brokers/" + broker)
             hb_str_time = hb_time.decode('utf-8')
             print('hb_str_time',hb_str_time)
-            self.broker_order.append([broker,float(hb_str_time)])
+            hb_flt_time = float(hb_str_time.split(',')[1])
+            self.broker_order.append([broker,hb_flt_time])
             
             print('broker',broker, hb_time.decode('utf-8'))
         self.broker_order.sort(key=lambda x: x[1])
-        i = 0
-        for bkr in self.broker_order:
-            location = '/broker_order/' + str(i)
-            self.zk.ensure_path(location)
-            self.zk.set(location,self.broker_order[i][0].encode('utf-8'))
-            print('setting order unit')
-            i += 1
-
         print('self.broker_order',self.broker_order)
+
 
 
 
     def assign_broker(self):
         self.broker_replication_order()
+
+        for i in range(len(self.broker_order)):
+            self.zk.ensure_path('/broker_order/' + str(i))
+            self.zk.delete('/broker_order/' + str(i))
+            self.zk.create('/broker_order/' + str(i), value = self.broker_order[i].encode('utf-8'), ephemeral=True )
 
         for topic in self.topics:
             broker_assignments = np.ceil((np.array(range(len(self.topics[topic])))+1)/self.config['load_topics_per_broker']).astype(int)
@@ -95,12 +92,7 @@ class ZK:
                 ip, znode_stats = self.zk.get('/brokers/' + broker_name + '/ip')
                 self.zk.set("/publishers/" + pub + '/rep_broker/ip',ip)
                 self.zk.set(rep_path,str(broker_name).encode('utf-8'))
-
                 i += 1
-
-
-
-
 
     def load_ballance(self):
         while True:
@@ -138,7 +130,6 @@ class ZK:
                         self.claim_lead()
                     else:
                         print('Leader is new.', leader_age)
-                sys.stdout.flush()
             
 
     def continuousLeaderCheck(self):
@@ -166,7 +157,6 @@ def main():
     zk.start_heartbeat()
     zk.get_topics()
     zk.assign_broker()
-    sys.stdout.flush()
     # zk.start_heartbeat()
     # # zk.claim_lead()
     # zk.checkIfLeader()

@@ -6,12 +6,12 @@
     "ip": "localhost",
     "leader_check_frequency": 1,
     "leader_timeout": 300,
-    "subscriber_timeout": 5,
     "load_ballance_rate": 2,
     "load_topics_per_broker": 2,
     "no_broker_port": "5556",
     "pub_port": "5555",
     "sub_port": "5556",
+    "subscriber_timeout": 5,
     "use_broker": true,
     "zkip": "10.0.2.15",
     "zkip_home": "172.17.0.1"
