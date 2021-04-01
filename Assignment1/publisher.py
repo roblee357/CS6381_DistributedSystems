@@ -66,6 +66,7 @@ class Publisher():
         self.publisher_path = "/publisher_order"
         self.p_path = "/publishers/pub_" + self.args.id 
         onshp = self.args.ownership
+        self.zk.ensure_path(self.p_path)
         self.zk.ensure_path(self.broker_order_path)
         self.zk.ensure_path('/topics')
         self.pub_tuple = (self.args.id + ',' + self.ip + ',' + self.args.topic + ',' + onshp + ',' + str(self.args.history)).encode('utf-8')

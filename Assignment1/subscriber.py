@@ -50,8 +50,9 @@ class Subscriber():
         while topic_cnt == 0:
             topics = self.zk.get_children("/topics")
             topic_cnt = len(topics)
-            print('Waiting for publishers...')
-            time.sleep(2)
+            if topic_cnt == 0:
+                print('Waiting for publishers...')
+                time.sleep(2)
         if self.topic in topics:
             broker = self.zk.get_children('/topics/' + self.topic)[0]
             self.broker_ip = self.zk.get_children("/brokers/" + broker + '/ip')[0]
@@ -128,7 +129,7 @@ class Subscriber():
         self.running = True
         print('finished creating socket')
 
-    @timeout(2)
+    @timeout(5)
     def get(self):
         self.i = 0
         if not self.use_broker:
