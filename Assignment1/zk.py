@@ -4,7 +4,7 @@ from kazoo.client import KazooClient
 import argparse 
 from threading import Thread
 import numpy as np
-import math
+import math, sys
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -68,7 +68,16 @@ class ZK:
             
             print('broker',broker, hb_time.decode('utf-8'))
         self.broker_order.sort(key=lambda x: x[1])
+        i = 0
+        for bkr in self.broker_order:
+            location = '/broker_order/' + str(i)
+            self.zk.ensure_path(location)
+            self.zk.set(location,self.broker_order[i][0].encode('utf-8'))
+            print('setting order unit')
+            i += 1
+
         print('self.broker_order',self.broker_order)
+
 
 
     def assign_broker(self):
@@ -129,6 +138,7 @@ class ZK:
                         self.claim_lead()
                     else:
                         print('Leader is new.', leader_age)
+                sys.stdout.flush()
             
 
     def continuousLeaderCheck(self):
@@ -156,6 +166,7 @@ def main():
     zk.start_heartbeat()
     zk.get_topics()
     zk.assign_broker()
+    sys.stdout.flush()
     # zk.start_heartbeat()
     # # zk.claim_lead()
     # zk.checkIfLeader()

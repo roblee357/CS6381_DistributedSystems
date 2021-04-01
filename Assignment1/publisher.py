@@ -15,7 +15,9 @@ import configurator
 from kazoo.client import KazooClient
 import getIP
 import watchers
-import random
+import random, math
+from zk import ZK
+
 
 class Unbuffered(object):
    def __init__(self, stream):
@@ -60,24 +62,57 @@ class Publisher():
         zk = KazooClient(hosts=self.config['zkip']+':2181')
         self.zk = zk
         self.zk.start()
-        self.rep_path = "/publishers/pub_" + self.args.id + '/rep_broker/ip/id'
+        self.broker_order_path = "/broker_order"
+        self.publisher_path = "/publisher_order"
         self.p_path = "/publishers/pub_" + self.args.id 
         onshp = self.args.ownership
-        self.zk.ensure_path(self.rep_path)
+        self.zk.ensure_path(self.broker_order_path)
+        self.zk.ensure_path('/topics')
         self.pub_tuple = (self.args.id + ',' + self.ip + ',' + self.args.topic + ',' + onshp + ',' + str(self.args.history)).encode('utf-8')
         self.zk.set(self.p_path,self.pub_tuple)
-        @zk.DataWatch(self.rep_path)
+        @zk.DataWatch(self.broker_order_path)
         def watch_data(data, stat):
-            print('leader change',data)
-            self.setup_broker()
-        
-        
+            print('broker change',data)        
+            self.get_broker()
+        @zk.DataWatch(self.publisher_path)
+        def watch_data(data, stat):
+            print('publisher change',data)        
+            self.get_broker()
 
 
-    def setup_broker(self):
+    def get_broker(self):
+        topics = self.zk.get_children('/topics')
+        
+        pub_data = (self.args.ownership + ',' + str(self.args.history)).encode('utf-8')
+        if self.args.topic in topics:
+            # Check ownership
+            data, znode_stats = self.zk.get('/topics/' + self.args.topic)
+            data = data.decode('utf-8')
+            ownership , history = data.split(',')
+            ownership , history = float(ownership) , int(history)
+            if ownership < float(self.args.ownership):
+                # Take owning topic position
+                self.zk.set('/topics/' + self.args.topic,pub_data)
+            # get broker. It should already be assigned
+        else:
+            self.zk.ensure_path('/topics/' + self.args.topic)
+            self.zk.set('/topics/' + self.args.topic,pub_data)
+            # since topic wasn't present, a broker will need to be assigned.
+            broker_requirement = math.ceil(len(topics)/ self.config['load_topics_per_broker'])
+            brokers = self.zk.get_children('/broker_order')
+            assigned_broker = brokers[broker_requirement]
+            broker_ip = , znode_stats = self.zk.get('/brokers/' + assign_broker + '/ip')
+
+
+
+
+
+
+        
+        
         id = ''
         while len(id) == 0:
-            id, znode_stats = self.zk.get(self.rep_path)
+            id, znode_stats = self.zk.get(self.broker_order_path)
             id = id.decode('utf-8')
             print('my replicant ID: ' + id)
             time.sleep(2)

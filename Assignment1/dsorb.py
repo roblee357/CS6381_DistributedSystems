@@ -33,6 +33,8 @@ class BorDS:
         # zk.claim_lead()
         zk.checkIfLeader()
         zk.start_leader_checks()
+        zk.start_load_ballancing()
+        zk.broker_replication_order()
         if 'broker_on' in args.brokermode:
             configurator.change('use_broker',True)
             # This is a proxy. We create the XSUB and XPUB endpoints
