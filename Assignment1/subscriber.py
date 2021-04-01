@@ -46,11 +46,21 @@ def parseCmdLineArgs ():
 class Subscriber():
 
     def setup_broker(self):    
-        self.lead_broker = self.zk.get_children("/lead_broker")[0]
-        self.lead_broker_ip , stat = self.zk.get("/lead_broker/ip")
-        self.lead_broker_ip = self.lead_broker_ip.decode("utf-8")
-        print('lead_broker from zk: ' + self.lead_broker + ' IP: ' + self.lead_broker_ip)
-        self.broker_ip = self.lead_broker_ip   # self.config['dip']
+        topic_cnt = 0
+        while topic_cnt == 0:
+            topics = self.zk.get_children("/topics")
+            topic_cnt = len(topics)
+            print('Waiting for publishers...')
+            time.sleep(2)
+        if self.topic in topics:
+            broker = self.zk.get_children('/topics/' + self.topic)[0]
+            self.broker_ip = self.zk.get_children("/brokers/" + broker + '/ip')[0]
+
+        # self.lead_broker = self.zk.get_children("/lead_broker")[0]
+        # self.lead_broker_ip , stat = self.zk.get("/lead_broker/ip")
+        # self.lead_broker_ip = self.lead_broker_ip.decode("utf-8")
+        # print('lead_broker from zk: ' + self.lead_broker + ' IP: ' + self.lead_broker_ip)
+        # self.broker_ip = self.lead_broker_ip   # self.config['dip']
         print('use broker' ,self.use_broker)
         if self.use_broker:
             self.con_str = "tcp://" + self.broker_ip + ":" + self.config['sub_port']
