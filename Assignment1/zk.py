@@ -88,11 +88,14 @@ class ZK:
             print(broker_assignments, 'broker requirement', max(broker_assignments))
             i = 0
             for pub in self.topics[topic]: 
-                print(topic, pub,'broker_assignments',broker_assignments,'i',i)
+                
                 rep_path = "/publishers/" + pub + '/rep_broker/ip/id'
                 self.zk.ensure_path(rep_path)
-                broker_name = self.broker_order[broker_assignments[i]]
-                ip, znode_stats = self.zk.get('/brokers/' + broker_name + '/ip')
+                broker_name = self.broker_order[broker_assignments[i]][0]
+                ip_node_path = '/brokers/' + broker_name 
+                print(topic, pub,'broker_assignments',broker_assignments,'i',i,'ip_node_path',ip_node_path)
+                ip, znode_stats = self.zk.get(ip_node_path)
+                ip = ip.decode('utf-8').split(',')[0]
                 self.zk.set("/publishers/" + pub + '/rep_broker/ip',ip)
                 self.zk.set(rep_path,str(broker_name).encode('utf-8'))
                 i += 1

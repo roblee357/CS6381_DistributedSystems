@@ -102,7 +102,7 @@ class Publisher():
             assigned_broker = self.zk.get_children('/topics/'  + self.args.topic)[0]
 
         else:
-            self.zk.ensure_path('/topics/' + self.args.topic)
+            self.zk.create('/topics/' + self.args.topic, ephemeral=True)
             topics = self.zk.get_children('/topics')
             self.zk.set('/topics/' + self.args.topic,pub_data)
             # since topic wasn't present, a broker will need to be assigned.
@@ -129,9 +129,13 @@ class Publisher():
         #     id = id.decode('utf-8')
         #     print('my replicant ID: ' + id)
         #     time.sleep(2)
+        brokers = self.zk.get_children('/brokers')
+        if assigned_broker in brokers:
+            repli_broker_ip, znode_stats = self.zk.get('/brokers/' + assigned_broker)
+            repli_broker_ip = repli_broker_ip.decode('utf-8').split(',')[0]
+        else:
+            # Broker has died. Brokers need to be reallocated.
 
-        repli_broker_ip, znode_stats = self.zk.get('/brokers/' + assigned_broker)
-        repli_broker_ip = repli_broker_ip.decode('utf-8').split(',')[0]
 
         
         
