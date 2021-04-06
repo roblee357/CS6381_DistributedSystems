@@ -48,6 +48,7 @@ class Subscriber():
     def setup_broker(self):    
         topic_cnt = 0
         while topic_cnt == 0:
+            self.zk.ensure_path("/topics")
             topics = self.zk.get_children("/topics")
             topic_cnt = len(topics)
             if topic_cnt == 0:

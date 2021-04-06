@@ -9,9 +9,9 @@ Failed connecting to Zookeeper within the connection retry policy.
 Instantiating the broker or discovery server
 connecting to ZK: 10.0.2.15:2181
 Traceback (most recent call last):
-  File "dsorb.py", line 63, in <module>
+  File "dsorb.py", line 65, in <module>
     main ()
-  File "dsorb.py", line 59, in main
+  File "dsorb.py", line 61, in main
     bords = BorDS(args)
   File "dsorb.py", line 31, in __init__
     zk = ZK(args, self.config, self.IP)

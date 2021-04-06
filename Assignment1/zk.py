@@ -76,19 +76,22 @@ class ZK:
         self.broker_replication_order()
 
         for i in range(len(self.broker_order)):
+            print('self.broker_order[i]',self.broker_order[i])
             self.zk.ensure_path('/broker_order/' + str(i))
             self.zk.delete('/broker_order/' + str(i))
-            self.zk.create('/broker_order/' + str(i), value = self.broker_order[i].encode('utf-8'), ephemeral=True )
+            broker = self.broker_order[i][0].split(',')[0].encode('utf-8')
+            print('broker',broker)
+            self.zk.create('/broker_order/' + str(i), value = broker, ephemeral=True )
 
         for topic in self.topics:
             broker_assignments = np.ceil((np.array(range(len(self.topics[topic])))+1)/self.config['load_topics_per_broker']).astype(int)
             print(broker_assignments, 'broker requirement', max(broker_assignments))
             i = 0
             for pub in self.topics[topic]: 
-                print(topic, pub)
+                print(topic, pub,'broker_assignments',broker_assignments,'i',i)
                 rep_path = "/publishers/" + pub + '/rep_broker/ip/id'
                 self.zk.ensure_path(rep_path)
-                broker_name = self.broker_order[broker_assignments[i]][0]
+                broker_name = self.broker_order[broker_assignments[i]]
                 ip, znode_stats = self.zk.get('/brokers/' + broker_name + '/ip')
                 self.zk.set("/publishers/" + pub + '/rep_broker/ip',ip)
                 self.zk.set(rep_path,str(broker_name).encode('utf-8'))

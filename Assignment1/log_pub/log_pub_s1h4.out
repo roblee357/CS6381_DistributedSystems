@@ -12,7 +12,7 @@ Traceback (most recent call last):
     main ()
   File "application_that_publishes.py", line 18, in main
     pub1 = publisher.Publisher(args)
-  File "/media/sf_VirtualBoxShare/CS6381_DistributedSystems/Assignment1/publisher.py", line 62, in __init__
+  File "/media/sf_VirtualBoxShare/CS6381_DistributedSystems/Assignment1/publisher.py", line 64, in __init__
     self.zk.start()
   File "/home/rob/.local/lib/python3.6/site-packages/kazoo/client.py", line 635, in start
     raise self.handler.timeout_exception("Connection time-out")
