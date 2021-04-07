@@ -4,7 +4,7 @@ from kazoo.client import KazooClient
 import argparse 
 from threading import Thread
 import numpy as np
-import math
+import math, sys
 
 def parseCmdLineArgs ():
     # parse the command line
@@ -21,17 +21,29 @@ class ZK:
         self.config = config
         self.zk_con_str = config['zkip']+':2181'
         print('connecting to ZK:' , self.zk_con_str)
-        self.zk = KazooClient(hosts= self.zk_con_str,timeout=1)
+        zk = KazooClient(hosts= self.zk_con_str)
+        self.zk = zk
         self.zk.start()
         self.b_path = "/brokers/broker_" + self.args.id 
-        self.zk.delete(self.b_path,recursive=True)
-        print('ip.encode(utf-8)',ip.encode('utf-8'))
-        self.zk.create(self.b_path,value = ip.encode('utf-8'),ephemeral=True)
+        self.ip_path = self.b_path + "/ip/" + self.ip
+        self.zk.ensure_path(self.ip_path)
+        self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
+        self.zk.ensure_path("/lead_broker/ip")
         self.zk.ensure_path("/publishers")
+        self.load_ballance_time = time.time()
+        @zk.ChildrenWatch('/publisher_topic_registration')
+        def my_func(children):
+            print('woah, something changed with el broker noderino')
+            for child in children:
+                @zk.DataWatch('/publisher_topic_registration/' + child)
+                def watch_data(data, stat):
+                    print('load ballancing now','child',child,'data',data)
+                    self.load_ballance()
+
 
     def heartbeat(self):
         while True:
-            heartbeat = (self.ip + ',' + str(time.time())).encode('utf-8')
+            heartbeat = self.ip.encode('utf-8')   #time.time
             self.zk.set(self.b_path,heartbeat)
             time.sleep(self.config['broker_heartrate'])
 
@@ -62,26 +74,24 @@ class ZK:
             hb_time, znode_stats = self.zk.get("/brokers/" + broker)
             hb_str_time = hb_time.decode('utf-8')
             print('hb_str_time',hb_str_time)
-            hb_flt_time = float(hb_str_time.split(',')[1])
-            self.broker_order.append([broker,hb_flt_time])
+            self.broker_order.append([broker,float(hb_str_time)])
             
             print('broker',broker, hb_time.decode('utf-8'))
         self.broker_order.sort(key=lambda x: x[1])
-        print('self.broker_order',self.broker_order)
+        i = 0
+        for bkr in self.broker_order:
+            location = '/broker_order/' + str(i)
+            self.zk.ensure_path(location)
+            self.zk.set(location,self.broker_order[i][0].encode('utf-8'))
+            print('setting order unit')
+            i += 1
 
+        print('self.broker_order',self.broker_order)
 
 
 
     def assign_broker(self):
         self.broker_replication_order()
-
-        for i in range(len(self.broker_order)):
-            print('self.broker_order[i]',self.broker_order[i])
-            self.zk.ensure_path('/broker_order/' + str(i))
-            self.zk.delete('/broker_order/' + str(i))
-            broker = self.broker_order[i][0].split(',')[0].encode('utf-8')
-            print('broker',broker)
-            self.zk.create('/broker_order/' + str(i), value = broker, ephemeral=True )
 
         for topic in self.topics:
             broker_assignments = np.ceil((np.array(range(len(self.topics[topic])))+1)/self.config['load_topics_per_broker']).astype(int)
@@ -101,11 +111,14 @@ class ZK:
                 i += 1
 
     def load_ballance(self):
-        while True:
-            topics = self.get_topics()
-            heartbeat = str(time.time()).encode('utf-8')
-            self.zk.set(self.b_path,heartbeat)
-            time.sleep(self.config['load_ballance_rate'])
+        if time.time() > self.load_ballance_time:
+            self.load_ballance_time += self.config['load_ballance_rate']
+            print('load ballancing')
+        # while True:
+        #     topics = self.get_topics()
+        #     heartbeat = str(time.time()).encode('utf-8')
+        #     self.zk.set(self.b_path,heartbeat)
+        #     time.sleep(self.config['load_ballance_rate'])
 
     def start_load_ballancing(self):
         t = Thread(target=self.load_ballance)
@@ -136,6 +149,7 @@ class ZK:
                         self.claim_lead()
                     else:
                         print('Leader is new.', leader_age)
+                sys.stdout.flush()
             
 
     def continuousLeaderCheck(self):
@@ -163,6 +177,7 @@ def main():
     zk.start_heartbeat()
     zk.get_topics()
     zk.assign_broker()
+    sys.stdout.flush()
     # zk.start_heartbeat()
     # # zk.claim_lead()
     # zk.checkIfLeader()
