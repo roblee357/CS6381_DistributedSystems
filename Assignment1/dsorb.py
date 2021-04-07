@@ -1,4 +1,3 @@
-
 import sys
 import time
 import random
@@ -31,8 +30,8 @@ class BorDS:
         zk = ZK(args, self.config, self.IP)
         zk.start_heartbeat()
         # zk.claim_lead()
-        zk.checkIfLeader()
-        zk.start_leader_checks()
+        # zk.checkIfLeader()
+        # zk.start_leader_checks()
         zk.start_load_ballancing()
         zk.assign_broker()
         if 'broker_on' in args.brokermode:

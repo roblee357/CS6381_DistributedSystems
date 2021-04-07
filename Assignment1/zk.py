@@ -39,6 +39,7 @@ class ZK:
                 def watch_data(data, stat):
                     print('load ballancing now','child',child,'data',data)
                     self.load_ballance()
+                    self.assign_broker()
 
     def load_ballance(self):
         if time.time() > self.load_ballance_time:
@@ -63,7 +64,6 @@ class ZK:
         for pub in publishers:
             self.pub_dict[pub] = {}
             data, zstat = self.zk.get("/publishers/" + pub)
-
             self.pub_dict[pub] = data.decode('utf-8')
             data_list = self.pub_dict[pub].split(',')
             if data_list[2] not in self.topics:
@@ -80,43 +80,27 @@ class ZK:
             broker_ip = broker_ip.decode('utf-8')
             broker_mtime = int(znode_stats[3])
             self.broker_order.append([broker,broker_mtime,broker_ip])
-            print('broker',broker, 'broker_ip',broker_ip)
+
         self.broker_order.sort(key=lambda x: x[1])
         i = 0
         for bkr in self.broker_order:
             location = '/broker_order/' + str(i)
             self.zk.ensure_path(location)
             self.zk.set(location,self.broker_order[i][0].encode('utf-8'))
-            print('setting order unit')
             i += 1
-
-        print('self.broker_order',self.broker_order)
-
-
 
     def assign_broker(self):
         self.broker_replication_order()
         self.topics = self.zk.get_children('/publisher_topic_registration')
         broker_assignments = np.ceil((np.array(range(len(self.topics)))+1)/self.config['load_topics_per_broker']).astype(int)
-        print('broker_assignments',broker_assignments)
+        print('broker_assignments',broker_assignments,'self.broker_order',self.broker_order)
         i = 0
+        self.zk.delete("/broker_topics",recursive=True)
+        self.zk.ensure_path("/broker_topics")
         for topic in self.topics:
-            print('broker_assignments',broker_assignments,  'self.broker_order[i]',self.broker_order[i])
-            # data, znode_stats =  self.zk.get('/broker_order/' + str(self.broker_order[i]-1))
-            # broker = data.decode('utf-8')
-            # data, znode_stats =  self.zk.get('/brokers/' + broker + '/' + ip)
-            # ip = data.decode('utf-8')
-
-            self.zk.set("/broker_topics/" + topic,self.broker_order[i][2].encode('utf-8'))
-            # self.zk.set(rep_path,str(broker_name).encode('utf-8'))
+            print('broker_assignments',broker_assignments,  'self.broker_order[broker_assignments[i]-1]',self.broker_order[broker_assignments[i]-1])
+            self.zk.create("/broker_topics/" + topic,value = self.broker_order[broker_assignments[i]-1][2].encode('utf-8'))
             i += 1
-
-
-        # while True:
-        #     topics = self.get_topics()
-        #     heartbeat = str(time.time()).encode('utf-8')
-        #     self.zk.set(self.b_path,heartbeat)
-        #     time.sleep(self.config['load_ballance_rate'])
 
     def start_load_ballancing(self):
         t = Thread(target=self.load_ballance)
@@ -150,22 +134,22 @@ class ZK:
                 sys.stdout.flush()
             
 
-    def continuousLeaderCheck(self):
-        while True:
-            self.checkIfLeader()
-            time.sleep(self.config["leader_check_frequency"])
+    # def continuousLeaderCheck(self):
+    #     while True:
+    #         self.checkIfLeader()
+    #         time.sleep(self.config["leader_check_frequency"])
 
-    def start_leader_checks(self):
-        t = Thread(target=self.continuousLeaderCheck)
-        t.start()          
+    # def start_leader_checks(self):
+    #     t = Thread(target=self.continuousLeaderCheck)
+    #     t.start()          
 
-    def claim_lead(self):
-        if len(self.args.id.encode('utf-8')) > 0:
-            self.zk.set("/lead_broker", self.args.id.encode('utf-8'))
-            self.zk.set("/lead_broker/ip", self.ip.encode('utf-8'))
-            print('lead claimed')
-        else:
-            print('trying to claim with null id')
+    # def claim_lead(self):
+    #     if len(self.args.id.encode('utf-8')) > 0:
+    #         self.zk.set("/lead_broker", self.args.id.encode('utf-8'))
+    #         self.zk.set("/lead_broker/ip", self.ip.encode('utf-8'))
+    #         print('lead claimed')
+    #     else:
+    #         print('trying to claim with null id')
 
 def main():
     args = parseCmdLineArgs ()

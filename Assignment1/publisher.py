@@ -59,7 +59,7 @@ class Publisher():
         self.args = args
         self.ip = getIP.get()
         self.config = configurator.load()
-        zk = KazooClient(hosts=self.config['zkip']+':2181')
+        zk = KazooClient(hosts=self.config['zkip']+':2181',timeout=1)
         self.zk = zk
         self.zk.start()
         self.broker_order_path = "/broker_order"
@@ -74,17 +74,24 @@ class Publisher():
         self.register_topic()
         self.broker_topic_path = '/broker_topics/' + self.args.topic
         self.zk.ensure_path(self.broker_topic_path )
+        # self.broker_topic_data = 0
+        first_pass = True
         @zk.DataWatch(self.broker_topic_path)
-        def watch_data(data, stat):
-            print('woah, something changed with el broker noderino ' + self.broker_topic_path , 'data' , data)
-            if len(data)>0:
+        def watch_data(data, stat,first_pass):
+            if not first_pass:
+                print('woah, something changed with el broker noderino ' + self.broker_topic_path , 'data' , data)
+                # if not data is None:
+                #     if len(data)>0:
+                #         self.broker_topic_data = data
                 self.broker_topic_data = data
                 self.get_broker()
-            else:
-                while len(self.broker_topic_data) == 0:
-                    self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
-                    print('waiting for broker_topic assignment...')
-                    time.sleep(2)
+            first_pass = False
+                # else:
+                #     while self.broker_topic_data == 0:
+                #         self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
+                #         print('waiting for broker_topic assignment...')
+                #         time.sleep(2)
+                #     self.get_broker()
 
     def register_topic(self):
         topics = self.zk.get_children('/publisher_topic_registration')
@@ -141,14 +148,7 @@ class Publisher():
 
     def send(self, message):
         message =  self.args.topic + ' ,PUB,' + str(self.args.id) + ',' + message
-        # print('sending',message)
         self.socket.send_string(message)
-        # if self.use_broker:
-        #     reply = self.socket.recv()
-        #     return reply
-        # else:
-        #     return None
-
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
