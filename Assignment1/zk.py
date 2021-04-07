@@ -40,6 +40,11 @@ class ZK:
                     print('load ballancing now','child',child,'data',data)
                     self.load_ballance()
 
+    def load_ballance(self):
+        if time.time() > self.load_ballance_time:
+            self.load_ballance_time += self.config['load_ballance_rate']
+            print('load ballancing')
+
 
     def heartbeat(self):
         while True:
@@ -71,12 +76,11 @@ class ZK:
         brokers = self.zk.get_children("/brokers")
         self.broker_order = []
         for broker in brokers:
-            hb_time, znode_stats = self.zk.get("/brokers/" + broker)
-            hb_str_time = hb_time.decode('utf-8')
-            print('hb_str_time',hb_str_time)
-            self.broker_order.append([broker,float(hb_str_time)])
-            
-            print('broker',broker, hb_time.decode('utf-8'))
+            broker_ip, znode_stats = self.zk.get("/brokers/" + broker)
+            broker_ip = broker_ip.decode('utf-8')
+            broker_mtime = int(znode_stats[3])
+            self.broker_order.append([broker,broker_mtime,broker_ip])
+            print('broker',broker, 'broker_ip',broker_ip)
         self.broker_order.sort(key=lambda x: x[1])
         i = 0
         for bkr in self.broker_order:
@@ -92,28 +96,22 @@ class ZK:
 
     def assign_broker(self):
         self.broker_replication_order()
-
+        self.topics = self.zk.get_children('/publisher_topic_registration')
+        broker_assignments = np.ceil((np.array(range(len(self.topics)))+1)/self.config['load_topics_per_broker']).astype(int)
+        print('broker_assignments',broker_assignments)
+        i = 0
         for topic in self.topics:
-            broker_assignments = np.ceil((np.array(range(len(self.topics[topic])))+1)/self.config['load_topics_per_broker']).astype(int)
-            print(broker_assignments, 'broker requirement', max(broker_assignments))
-            i = 0
-            for pub in self.topics[topic]: 
-                
-                rep_path = "/publishers/" + pub + '/rep_broker/ip/id'
-                self.zk.ensure_path(rep_path)
-                broker_name = self.broker_order[broker_assignments[i]][0]
-                ip_node_path = '/brokers/' + broker_name 
-                print(topic, pub,'broker_assignments',broker_assignments,'i',i,'ip_node_path',ip_node_path)
-                ip, znode_stats = self.zk.get(ip_node_path)
-                ip = ip.decode('utf-8').split(',')[0]
-                self.zk.set("/publishers/" + pub + '/rep_broker/ip',ip)
-                self.zk.set(rep_path,str(broker_name).encode('utf-8'))
-                i += 1
+            print('broker_assignments',broker_assignments,  'self.broker_order[i]',self.broker_order[i])
+            # data, znode_stats =  self.zk.get('/broker_order/' + str(self.broker_order[i]-1))
+            # broker = data.decode('utf-8')
+            # data, znode_stats =  self.zk.get('/brokers/' + broker + '/' + ip)
+            # ip = data.decode('utf-8')
 
-    def load_ballance(self):
-        if time.time() > self.load_ballance_time:
-            self.load_ballance_time += self.config['load_ballance_rate']
-            print('load ballancing')
+            self.zk.set("/broker_topics/" + topic,self.broker_order[i][2].encode('utf-8'))
+            # self.zk.set(rep_path,str(broker_name).encode('utf-8'))
+            i += 1
+
+
         # while True:
         #     topics = self.get_topics()
         #     heartbeat = str(time.time()).encode('utf-8')

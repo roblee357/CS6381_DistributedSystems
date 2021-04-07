@@ -81,8 +81,8 @@ class Publisher():
                 self.broker_topic_data = data
                 self.get_broker()
             else:
-                while len(data) == 0:
-                    data, znode_stats = self.zk.get(self.broker_topic_path)
+                while len(self.broker_topic_data) == 0:
+                    self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
                     print('waiting for broker_topic assignment...')
                     time.sleep(2)
 
@@ -113,41 +113,8 @@ class Publisher():
                     # Take owning topic position
                     self.zk.set('/publisher_topic_registration/' + self.args.topic,pub_data)
 
-        
-            # # get broker. It should already be assigned
-            #     brokers = self.zk.get_children('/publisher_topic_registration/'  + self.args.topic)[0]
-        #     # if len(brokers) > 0 :
-        #     #     assigned_broker = brokers[0]
-        #     # since topic wasn't present, a broker will need to be assigned.
-        #     broker_requirement = math.ceil(len(topics)/ self.config['load_topics_per_broker'])
-        #     broker_cnt = 0
-        #     while broker_cnt == 0:
-        #         brokers = self.zk.get_children('/broker_order')
-        #         broker_cnt = len(brokers)
-        #         if broker_cnt == 0:
-        #             print('waiting for broker to start...')
-        #             time.sleep(2)
-        #     print('broker_requirement',broker_requirement,'brokers',brokers)
-        #     assigned_broker_num = str(brokers[broker_requirement-1])
-        #     assigned_broker, znode_stats = self.zk.get('/broker_order/' + assigned_broker_num)
-        #     assigned_broker = assigned_broker.decode('utf-8')
-        #     print('assigned_broker',assigned_broker)
-        #     broker_ip , znode_stats = self.zk.get('/brokers/' + assigned_broker )
-        #     repli_broker_ip = broker_ip.decode('utf-8')
-        # # id = ''
-        # # while len(id) == 0:
-        # #     id, znode_stats = self.zk.get(self.broker_order_path)
-        # #     id = id.decode('utf-8')
-        # #     print('my replicant ID: ' + id)
-        # #     time.sleep(2)
-
     def get_broker(self):
-        repli_broker_id = self.broker_topic_data.decode('utf-8').split(',')[2]
-        data, znode_stats = self.zk.get('/brokers/' + repli_broker_id)
-        repli_broker_ip = data.decode('utf-8')
-        
-
-
+        repli_broker_ip = self.broker_topic_data.decode('utf-8')
         self.context = zmq.Context()
         self.use_broker = self.config['use_broker']
     

@@ -193,7 +193,7 @@ def main ():
 
     # create the network
     print("Instantiate network")
-    net = Mininet (topo, link=TCLink)
+    net = Mininet (topo, link=TCLink, xterms=True)
     net.addNAT().configDefault()
 
     # activate the network
@@ -219,7 +219,7 @@ def main ():
     genCommandsFile (net.hosts, parsed_args)
 
     # net.host('s1h1').cmd
-    SystemTest(net)
+    # SystemTest(net)
 
     # run the cli
     CLI (net)
