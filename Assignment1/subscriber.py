@@ -86,15 +86,28 @@ class Subscriber():
         self.zk.start()
         self.context = zmq.Context()
         self.running = True
-        
-        @zk.DataWatch("/lead_broker")
-        def watch_data(data, stat):
-            print('leader change',data)
-            # time.sleep(1)
-            if len(data)>0:
-                self.setup_broker()
+        self.zk.ensure_path('/broker_topics')
+        self.topics = self.zk.get_children('/broker_topics')
+        while not self.topic in self.topics:
+            print('waiting for topic:',self.topic)
+            time.sleep(2)
+            self.topics = self.zk.get_children('/broker_topics')
 
-        # self.setup_broker()
+        @zk.DataWatch('/broker_topics/' + self.topic)
+        def watch_data(data, stat):
+            if not data is None:
+                pub_info = data.decode('utf-8').split(',')
+                print('pub_info',pub_info)
+                self.broker_ip = pub_info[0]
+                owning_pub = pub_info[1]
+                print('use broker' ,self.use_broker)
+                if self.use_broker:
+                    self.con_str = "tcp://" + self.broker_ip + ":" + self.config['sub_port']
+                    self.createSocket()
+                    print('using broker',self.con_str)
+                else:
+                    print('not using broker')
+                    self.get_sockets_from_discovery_server()
 
     def get_sockets_from_discovery_server(self):
             print('initiating discovery client connection')

@@ -25,10 +25,11 @@ class ZK:
         self.zk = zk
         self.zk.start()
         self.b_path = "/brokers/broker_" + self.args.id 
-        self.ip_path = self.b_path + "/ip/" + self.ip
-        self.zk.ensure_path(self.ip_path)
-        self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
-        self.zk.ensure_path("/lead_broker/ip")
+        # self.ip_path = self.b_path + "/ip/" + self.ip
+        # self.zk.ensure_path(self.ip_path)
+        # self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
+        self.zk.ensure_path("/brokers/" + self.args.id)
+        self.zk.set("/brokers/" + self.args.id, self.ip.encode('utf-8'))
         self.zk.ensure_path("/publishers")
         self.load_ballance_time = time.time()
         @zk.ChildrenWatch('/publisher_topic_registration')
@@ -98,40 +99,43 @@ class ZK:
         self.zk.delete("/broker_topics",recursive=True)
         self.zk.ensure_path("/broker_topics")
         for topic in self.topics:
+            data, znode_stats = self.zk.get('/publisher_topic_registration/' + topic)
+            pub_str = data.decode('utf-8')
+            pub_id = pub_str.split(',')[2]
             print('broker_assignments',broker_assignments,  'self.broker_order[broker_assignments[i]-1]',self.broker_order[broker_assignments[i]-1])
-            self.zk.create("/broker_topics/" + topic,value = self.broker_order[broker_assignments[i]-1][2].encode('utf-8'))
+            self.zk.create("/broker_topics/" + topic,value = (self.broker_order[broker_assignments[i]-1][2] + ',' + pub_id).encode('utf-8'))
             i += 1
 
     def start_load_ballancing(self):
         t = Thread(target=self.load_ballance)
         t.start() 
 
-    def checkIfLeader(self):
-        curTime = round(time.time()*1000)
-        lead_broker, znode_stats = self.zk.get("/lead_broker")
-        # print('lead_broker',lead_broker, 'znode_stats ', znode_stats)
-        lead_broker_mtime = znode_stats[3]
-        # print('lead_broker_mtime',lead_broker_mtime)
-        lead_broker_age = curTime - lead_broker_mtime
-        lead_broker_name = 'broker_' + lead_broker.decode('utf-8')
-        # print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
-        brokers = self.zk.get_children("/brokers")
-        if not lead_broker_name in brokers:
-            print('broker not listed. Claiming lead',lead_broker_name, brokers)
-            self.claim_lead()   
-        else:
-            for broker in brokers:
-                broker_data, znode_stats = self.zk.get("/brokers/" + broker)
-                mtime = znode_stats[3]
-                print(lead_broker_name, broker, broker_data,mtime)
-                if broker == lead_broker_name:
-                    leader_age = curTime - mtime
-                    if leader_age > self.config["leader_timeout"]:
-                        print('Leader is old. Let\'s get rid of they.', leader_age)
-                        self.claim_lead()
-                    else:
-                        print('Leader is new.', leader_age)
-                sys.stdout.flush()
+    # def checkIfLeader(self):
+    #     curTime = round(time.time()*1000)
+    #     lead_broker, znode_stats = self.zk.get("/lead_broker")
+    #     # print('lead_broker',lead_broker, 'znode_stats ', znode_stats)
+    #     lead_broker_mtime = znode_stats[3]
+    #     # print('lead_broker_mtime',lead_broker_mtime)
+    #     lead_broker_age = curTime - lead_broker_mtime
+    #     lead_broker_name = 'broker_' + lead_broker.decode('utf-8')
+    #     # print('lead_broker_name', lead_broker_name,'lead_broker_age',lead_broker_age)
+    #     brokers = self.zk.get_children("/brokers")
+    #     if not lead_broker_name in brokers:
+    #         print('broker not listed. Claiming lead',lead_broker_name, brokers)
+    #         self.claim_lead()   
+    #     else:
+    #         for broker in brokers:
+    #             broker_data, znode_stats = self.zk.get("/brokers/" + broker)
+    #             mtime = znode_stats[3]
+    #             print(lead_broker_name, broker, broker_data,mtime)
+    #             if broker == lead_broker_name:
+    #                 leader_age = curTime - mtime
+    #                 if leader_age > self.config["leader_timeout"]:
+    #                     print('Leader is old. Let\'s get rid of they.', leader_age)
+    #                     self.claim_lead()
+    #                 else:
+    #                     print('Leader is new.', leader_age)
+    #             sys.stdout.flush()
             
 
     # def continuousLeaderCheck(self):
