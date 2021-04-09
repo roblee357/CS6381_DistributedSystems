@@ -35,7 +35,7 @@ def parseCmdLineArgs ():
     # parse the command line
     parser = argparse.ArgumentParser ()
     # add optional arguments
-    # parser.add_argument ("-i", "--ip", default='localhost',help="IP address of broker/proxy")
+    parser.add_argument ("-his", "--history", default=5,help="History default 5 units of message")
     # add positional arguments in that order
     parser.add_argument ("topic", help="Topic")
     parser.add_argument ("id", help="ID")
@@ -76,6 +76,7 @@ class Subscriber():
         self.topic = args.topic
         # self.context
         self.id = args.id
+        self.args = args
         self.ip = getIP.get() #ip
         self.config = configurator.load()
         self.socket = None
@@ -130,7 +131,6 @@ class Subscriber():
                 print(dicts)
 
     def createSocket(self):
-        
         self.socket = self.context.socket(zmq.SUB)
         self.topicfilter = str.encode(self.topic)
         self.socket.connect(self.con_str)
@@ -157,6 +157,9 @@ class Subscriber():
             # print('socks',socks)
             if self.socket in socks:# and socks[self.socket] == zmq.POLLIN:
                 response = self.socket.recv_string()
+                response_list = response.split(';')
+                if len(response_list)> self.args.history:
+                    response = ';'.join(response_list[:-self.args.history])
                 return response
         else:
             print('not running')

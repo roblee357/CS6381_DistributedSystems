@@ -67,6 +67,7 @@ class Publisher():
         self.register_topic()
         self.broker_topic_path = '/broker_topics/' + self.args.topic
         self.zk.ensure_path(self.broker_topic_path )
+        self.mq = []
         # self.broker_topic_data = 0
         @zk.DataWatch(self.broker_topic_path)
         def watch_data(data, stat):
@@ -92,6 +93,7 @@ class Publisher():
                         print('could not get broker_topic node data')
                     print('waiting for broker_topic assignment...')
                     time.sleep(2)
+                    self.get_broker()
                 self.get_broker()
 
 
@@ -153,7 +155,7 @@ class Publisher():
             # wait for friendly APIs to connect.
             time.sleep(2)
         else:            
-            print('not owning pub')
+            print('not owning pub',owning_pub , pub_info)
             time.sleep(2)
             self.socket = None
             self.register_topic()
@@ -162,12 +164,16 @@ class Publisher():
             
 
     def send(self, message):
+        self.mq.append(message)
+        if len(self.mq)>self.args.history:
+            self.mq.pop(0)
         if hasattr(self,'socket'):
             if not self.socket is None:
-                message =  self.args.topic + ' ,PUB,' + str(self.args.id) + ',' + message
+                message =  self.args.topic + ' ,PUB,' + str(self.args.id) + ',' + ';'.join(self.mq)
                 self.socket.send_string(message)
         else:
             print("socket is None. May not be owning topic.")
+            self.get_broker()
 
 def main ():
     """ Main program for publisher. This will be the publishing application """
