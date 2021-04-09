@@ -70,6 +70,9 @@ class Publisher():
         # self.broker_topic_data = 0
         @zk.DataWatch(self.broker_topic_path)
         def watch_data(data, stat):
+            # print("Data is %s" % data)
+            # print("Version is %s" % stat.version)
+            # print("Event is %s" % event)
             if not data is None:
                 if len(data) > 0:
                     self.broker_topic_data = data

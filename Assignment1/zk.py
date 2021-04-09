@@ -21,7 +21,7 @@ class ZK:
         self.config = config
         self.zk_con_str = config['zkip']+':2181'
         print('connecting to ZK:' , self.zk_con_str)
-        zk = KazooClient(hosts= self.zk_con_str)
+        zk = KazooClient(hosts= self.zk_con_str,timeout=1)
         self.zk = zk
         self.zk.start()
         self.b_path = "/brokers/broker_" + self.args.id 
@@ -29,7 +29,8 @@ class ZK:
         # self.zk.ensure_path(self.ip_path)
         # self.zk.set(self.b_path + "/ip", self.ip.encode('utf-8'))
         self.zk.ensure_path("/brokers/" + self.args.id)
-        self.zk.set("/brokers/" + self.args.id, self.ip.encode('utf-8'))
+        self.zk.delete("/brokers/" + self.args.id)
+        self.zk.create("/brokers/" + self.args.id, self.ip.encode('utf-8'),ephemeral = True)
         self.zk.ensure_path("/publishers")
         self.load_ballance_time = time.time()
         @zk.ChildrenWatch('/publisher_topic_registration')
@@ -50,6 +51,8 @@ class ZK:
     def load_ballance(self):
         if time.time() > self.load_ballance_time:
             self.load_ballance_time += self.config['load_ballance_rate']
+            self.zk.delete("/brokers/" + self.args.id)
+            self.zk.create("/brokers/" + self.args.id, self.ip.encode('utf-8'),ephemeral = True)
             print('load ballancing')
 
     def get_topics(self):
@@ -81,6 +84,7 @@ class ZK:
         for bkr in self.broker_order:
             location = '/broker_order/' + str(i)
             self.zk.ensure_path(location)
+            # self.zk.delete(location)
             self.zk.set(location,self.broker_order[i][0].encode('utf-8'))
             i += 1
 

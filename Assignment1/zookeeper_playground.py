@@ -1,4 +1,5 @@
 from kazoo.client import KazooClient
+import kazoo.recipe.watchers
 import json 
 import time
 
@@ -9,18 +10,19 @@ zk = KazooClient(hosts= config['zkip'] + ':2181')
 zk.start()
 data, stat = zk.get("/")
 print("Version: %s, data: %s" % (stat.version, data.decode("utf-8")))
-brokerNo = '1'
-b_path = "/electionpath/broker_" + brokerNo
-zk.ensure_path(b_path)
 
 
-heartbeat = str(time.time()).encode('utf-8')
-zk.set(b_path,heartbeat)
+watcher = kazoo.recipe.watchers.PatientChildrenWatch(zk, '/publishers',
+                               time_boundary=5)
+async_object = watcher.start()
 
-data = zk.get(b_path)
-print('data',data)
-# zk.create("/electionpath", ephemeral=True, sequence=False)
-# zk.set("/lead_broker/broker1",b"10.0.0.2")
+# Blocks until the children have not changed for time boundary
+# (5 in this case) seconds, returns children list and an
+# async_result that will be set if the children change in the
+# future
+children, child_async = async_object.get()
+
+print('children', 'child_async', children, child_async)
 
 # List the children
 children = zk.get_children("/electionpath")

@@ -1,0 +1,16 @@
+broker_topics 
+topic1 10.0.0.4,1
+publisher_topic_registration 
+topic1 0.883,10,1
+brokers 
+1 10.0.0.4
+zookeeper 
+config 
+quota 
+publishers 
+pub_1 1,10.0.0.1,topic1,0.883,10
+electionpath 
+broker_1 1617973448.6359146
+broker_order 
+0 1
+{'/broker_topics/topic1': {'data': '10.0.0.4,1', 'children': None}, '/broker_topics': {'data': '', 'children': None}, '/publisher_topic_registration/topic1': {'data': '0.883,10,1', 'children': None}, '/publisher_topic_registration': {'data': '', 'children': None}, '/brokers/1': {'data': '10.0.0.4', 'children': None}, '/brokers': {'data': '', 'children': None}, '/zookeeper/config': {'data': '', 'children': None}, '/zookeeper/quota': {'data': '', 'children': None}, '/zookeeper': {'data': '', 'children': None}, '/publishers/pub_1': {'data': '1,10.0.0.1,topic1,0.883,10', 'children': None}, '/publishers': {'data': '', 'children': None}, '/electionpath/broker_1': {'data': '1617973448.6359146', 'children': None}, '/electionpath': {'data': '', 'children': None}, '/broker_order/0': {'data': '1', 'children': None}, '/broker_order': {'data': '', 'children': None}}
