@@ -1,12 +1,3 @@
-#
-#   CS6381 Distributed Systems
-#   Spring 2021
-#   Assignment 1
-#   Team 5 "El Sinko"
-#   Rob Lee (robert.e.lee.1@vanderbilt.edu) and Jess Phelan (Jessica.phelan@vanderbilt.edu)
-#   Publisher API
-#
-
 from discovery_client import *
 import zmq,  json, sys
 import argparse, time
@@ -70,7 +61,9 @@ class Publisher():
         self.zk.ensure_path(self.broker_order_path)
         self.zk.ensure_path('/publisher_topic_registration')
         self.pub_tuple = (self.args.id + ',' + self.ip + ',' + self.args.topic + ',' + onshp + ',' + str(self.args.history)).encode('utf-8')
-        self.zk.set(self.p_path,self.pub_tuple)
+        self.zk.delete(self.p_path)
+        self.zk.create(self.p_path,value=self.pub_tuple,ephemeral=True)
+        # self.zk.set(self.p_path,self.pub_tuple)
         self.register_topic()
         self.broker_topic_path = '/broker_topics/' + self.args.topic
         self.zk.ensure_path(self.broker_topic_path )
@@ -90,7 +83,10 @@ class Publisher():
                     self.get_broker()       
             else:
                 while (data is None) or (len(data) == 0):
-                    self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
+                    try:
+                        self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
+                    except:
+                        print('could not get broker_topic node data')
                     print('waiting for broker_topic assignment...')
                     time.sleep(2)
                 self.get_broker()
@@ -157,14 +153,18 @@ class Publisher():
             print('not owning pub')
             time.sleep(2)
             self.socket = None
+            self.register_topic()
+            self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
             self.get_broker()
+            
 
     def send(self, message):
-        if not self.socket is None:
-            message =  self.args.topic + ' ,PUB,' + str(self.args.id) + ',' + message
-            self.socket.send_string(message)
+        if hasattr(self,'socket'):
+            if not self.socket is None:
+                message =  self.args.topic + ' ,PUB,' + str(self.args.id) + ',' + message
+                self.socket.send_string(message)
         else:
-            print("socket is None")
+            print("socket is None. May not be owning topic.")
 
 def main ():
     """ Main program for publisher. This will be the publishing application """

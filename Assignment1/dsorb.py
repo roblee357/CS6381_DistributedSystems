@@ -28,7 +28,7 @@ class BorDS:
         with open('config.json','r') as fin:
             self.config = json.load(fin)
         zk = ZK(args, self.config, self.IP)
-        zk.start_heartbeat()
+        # zk.start_heartbeat()
         # zk.claim_lead()
         # zk.checkIfLeader()
         # zk.start_leader_checks()

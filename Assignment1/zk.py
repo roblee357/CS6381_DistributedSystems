@@ -41,29 +41,23 @@ class ZK:
                     print('load ballancing now','child',child,'data',data)
                     self.load_ballance()
                     self.assign_broker()
+        @zk.ChildrenWatch("/publishers")
+        def my_func(children):
+            print("PUBLISHER CHANGED!!!")
+            self.assign_broker()
+            # self.get_topics()
 
     def load_ballance(self):
         if time.time() > self.load_ballance_time:
             self.load_ballance_time += self.config['load_ballance_rate']
             print('load ballancing')
 
-
-    def heartbeat(self):
-        while True:
-            heartbeat = self.ip.encode('utf-8')   #time.time
-            self.zk.set(self.b_path,heartbeat)
-            time.sleep(self.config['broker_heartrate'])
-
-    def start_heartbeat(self):
-        t = Thread(target=self.heartbeat)
-        t.start()  
-
     def get_topics(self):
         self.pub_dict = {}
         self.topics = {}
         publishers = self.zk.get_children("/publishers")
         for pub in publishers:
-            self.pub_dict[pub] = {}
+            self.pub_dict[pub] = {}               
             data, zstat = self.zk.get("/publishers/" + pub)
             self.pub_dict[pub] = data.decode('utf-8')
             data_list = self.pub_dict[pub].split(',')
@@ -96,6 +90,7 @@ class ZK:
         broker_assignments = np.ceil((np.array(range(len(self.topics)))+1)/self.config['load_topics_per_broker']).astype(int)
         print('broker_assignments',broker_assignments,'self.broker_order',self.broker_order)
         i = 0
+        #TODO This throughs an error in the publisher's watcher when the node is deleted and therre's no data
         self.zk.delete("/broker_topics",recursive=True)
         self.zk.ensure_path("/broker_topics")
         for topic in self.topics:
@@ -103,7 +98,11 @@ class ZK:
             pub_str = data.decode('utf-8')
             pub_id = pub_str.split(',')[2]
             print('broker_assignments',broker_assignments,  'self.broker_order[broker_assignments[i]-1]',self.broker_order[broker_assignments[i]-1])
-            self.zk.create("/broker_topics/" + topic,value = (self.broker_order[broker_assignments[i]-1][2] + ',' + pub_id).encode('utf-8'))
+            try:
+                self.zk.create("/broker_topics/" + topic,value = (self.broker_order[broker_assignments[i]-1][2] + ',' + pub_id).encode('utf-8'))
+            except:
+                print('could not create broker_topics node')
+
             i += 1
 
     def start_load_ballancing(self):
