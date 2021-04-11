@@ -32,7 +32,7 @@ class ZK:
         self.zk.delete("/brokers/" + self.args.id)
         self.zk.create("/brokers/" + self.args.id, self.ip.encode('utf-8'),ephemeral = True)
         self.zk.ensure_path("/publishers")
-        self.load_ballance_time = time.time()
+        # self.load_ballance_time = time.time()
         @zk.ChildrenWatch('/publisher_topic_registration')
         def my_func(children):
             print('woah, something changed with el broker noderino')
@@ -40,20 +40,30 @@ class ZK:
                 @zk.DataWatch('/publisher_topic_registration/' + child)
                 def watch_data(data, stat):
                     print('load ballancing now','child',child,'data',data)
-                    self.load_ballance()
+                    # self.load_ballance()
                     self.assign_broker()
         @zk.ChildrenWatch("/publishers")
         def my_func(children):
             print("PUBLISHER CHANGED!!!")
             self.assign_broker()
             # self.get_topics()
+        @zk.ChildrenWatch('/brokers')
+        def my_func(children):
+            print("ASSIGNING BROKER")
+            broker_assigned = False
+            while not broker_assigned:
+                try:
+                    self.assign_broker()
+                    broker_assigned = True
+                except:
+                    time.sleep(1)
 
-    def load_ballance(self):
-        if time.time() > self.load_ballance_time:
-            self.load_ballance_time += self.config['load_ballance_rate']
-            self.zk.delete("/brokers/" + self.args.id)
-            self.zk.create("/brokers/" + self.args.id, self.ip.encode('utf-8'),ephemeral = True)
-            print('load ballancing')
+    # def load_ballance(self):
+    #     if time.time() > self.load_ballance_time:
+    #         self.load_ballance_time += self.config['load_ballance_rate']
+    #         self.zk.delete("/brokers/" + self.args.id)
+    #         self.zk.create("/brokers/" + self.args.id, self.ip.encode('utf-8'),ephemeral = True)
+    #         print('load ballancing')
 
     def get_topics(self):
         self.pub_dict = {}
@@ -81,6 +91,7 @@ class ZK:
 
         self.broker_order.sort(key=lambda x: x[1])
         i = 0
+        self.zk.delete("/broker_order",recursive=True)
         for bkr in self.broker_order:
             location = '/broker_order/' + str(i)
             self.zk.ensure_path(location)
@@ -95,23 +106,43 @@ class ZK:
         print('broker_assignments',broker_assignments,'self.broker_order',self.broker_order)
         i = 0
         #TODO This throughs an error in the publisher's watcher when the node is deleted and therre's no data
-        self.zk.delete("/broker_topics",recursive=True)
-        self.zk.ensure_path("/broker_topics")
-        for topic in self.topics:
-            data, znode_stats = self.zk.get('/publisher_topic_registration/' + topic)
-            pub_str = data.decode('utf-8')
-            pub_id = pub_str.split(',')[2]
-            print('broker_assignments',broker_assignments,  'self.broker_order[broker_assignments[i]-1]',self.broker_order[broker_assignments[i]-1])
-            try:
-                self.zk.create("/broker_topics/" + topic,value = (self.broker_order[broker_assignments[i]-1][2] + ',' + pub_id).encode('utf-8'))
-            except:
-                print('could not create broker_topics node')
+        try:
+            self.zk.delete("/broker_topics",recursive=True)
+            self.zk.ensure_path("/broker_topics")
+            if len(self.topics) > 0:
+                for topic in self.topics:
+                    data, znode_stats = self.zk.get('/publisher_topic_registration/' + topic)
+                    pub_str = data.decode('utf-8')
+                    pub_id = pub_str.split(',')[2]
+                    print('i',i,'self.broker_order',self.broker_order)
+                    print('broker_assignments',broker_assignments,  'self.broker_order[broker_assignments[i]-1]',self.broker_order[broker_assignments[i]-1])
+                    try:
+                        self.zk.create("/broker_topics/" + topic,value = (self.broker_order[broker_assignments[i]-1][2] + ',' + pub_id).encode('utf-8'),ephemeral=True)
+                    except:
+                        time.sleep(1)
+                        try:
+                            self.zk.create("/broker_topics/" + topic,value = (self.broker_order[broker_assignments[i]-1][2] + ',' + pub_id).encode('utf-8'),ephemeral=True)
+                        except:
+                            print('could not create broker_topics node')
+                            time.sleep(.1)
+                            self.assign_broker()
+                    i += 1
+                    if self.config['load_topics_per_broker'] * len(self.broker_order) == i:
+                        break 
+            
+            else:
+                print('COULD NOT DELETE BROKER_TOPICS 1')
+                time.sleep(.1)
+                self.assign_broker()
+        except:
+            print('COULD NOT DELETE BROKER_TOPICS 2')
+            time.sleep(.1)
+            self.assign_broker()
 
-            i += 1
 
-    def start_load_ballancing(self):
-        t = Thread(target=self.load_ballance)
-        t.start() 
+    # def start_load_ballancing(self):
+    #     t = Thread(target=self.load_ballance)
+    #     t.start() 
 
     # def checkIfLeader(self):
     #     curTime = round(time.time()*1000)

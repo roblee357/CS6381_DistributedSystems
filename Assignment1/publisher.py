@@ -66,35 +66,64 @@ class Publisher():
         # self.zk.set(self.p_path,self.pub_tuple)
         self.register_topic()
         self.broker_topic_path = '/broker_topics/' + self.args.topic
-        self.zk.ensure_path(self.broker_topic_path )
-        self.mq = []
-        # self.broker_topic_data = 0
-        @zk.DataWatch(self.broker_topic_path)
-        def watch_data(data, stat):
-            # print("Data is %s" % data)
-            # print("Version is %s" % stat.version)
-            # print("Event is %s" % event)
-            if not data is None:
-                if len(data) > 0:
-                    self.broker_topic_data = data
+        path_created = False
+        while not path_created:
+            try:
+                self.zk.ensure_path(self.broker_topic_path )
+                self.mq = []
+                data , znode_stats = self.zk.get(self.broker_topic_path)
+                time.sleep(1)
+                path_created = True
+            except:
+                pass
+        self.broker_topic_data = data.decode('utf-8')
+        while self.broker_topic_data == '':
+            try:
+                data , znode_stats = self.zk.get(self.broker_topic_path)
+                self.broker_topic_data = data.decode('utf-8')   
+                time.sleep(.3)
+                print('waiting for broker topic...')
+            except:
+                pass
 
-                    # if not first_pass is None:
-                    print('woah, something changed with el broker noderino ' + self.broker_topic_path , 'data' , data)
-                        # if not data is None:
-                        #     if len(data)>0:
-                        #         self.broker_topic_data = data
-                    self.broker_topic_data = data
-                    self.get_broker()       
-            else:
-                while (data is None) or (len(data) == 0):
-                    try:
-                        self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
-                    except:
-                        print('could not get broker_topic node data')
-                    print('waiting for broker_topic assignment...')
-                    time.sleep(2)
-                    self.get_broker()
-                self.get_broker()
+        # self.broker_topic_data = 0
+        # @zk.DataWatch(self.broker_topic_path)
+        # def watch_data(data, stat):
+        #     # print("Data is %s" % data)
+        #     # print("Version is %s" % stat.version)
+        #     # print("Event is %s" % event)
+        #     print('data',data)
+        #     if not data is None:
+        #         if len(data) > 0:
+        #             self.broker_topic_data = data
+
+        #             # if not first_pass is None:
+        #             print('woah, something changed with el broker noderino ' + self.broker_topic_path , 'data' , data)
+        #                 # if not data is None:
+        #                 #     if len(data)>0:
+        #                 #         self.broker_topic_data = data
+        #             self.broker_topic_data = data
+        #             self.get_broker()       
+                    
+        #         else:
+        #             while  (len(data) == 0):
+        #                 try:
+        #                     self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
+        #                 except:
+        #                     print('could not get broker_topic node data')
+        #                 print('waiting for broker_topic assignment...')
+        #                 time.sleep(2)
+        #                 self.get_broker()
+        #     else:
+        #         while (data is None) or (len(data) == 0):
+        #             try:
+        #                 self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
+        #             except:
+        #                 print('could not get broker_topic node data')
+        #             print('waiting for broker_topic assignment...')
+        #             time.sleep(2)
+        #             self.get_broker()
+        #         self.get_broker()
 
 
     def register_topic(self):
@@ -126,42 +155,50 @@ class Publisher():
                     self.zk.set('/publisher_topic_registration/' + self.args.topic,pub_data)
 
     def get_broker(self):
-        pub_info = self.broker_topic_data.decode('utf-8').split(',')
-        print('pub_info',pub_info,'self.args.id',self.args.id) #,self.args.id==pub_info[1])
-        repli_broker_ip = pub_info[0]
-        owning_pub = pub_info[1]
-        if owning_pub == self.args.id:
-            self.context = zmq.Context()
-            self.use_broker = self.config['use_broker']
-        
-            if self.use_broker:
-                con_str = "tcp://" + repli_broker_ip + ":" + self.config['pub_port']
-                print('Using broker @',con_str)
-                self.socket = self.context.socket(zmq.PUB)
-                self.socket.connect(con_str)
-            else:
-                # con_str = "tcp://" + self.ip + ":" + config['pub_port']
-                print('Not using broker. Connecting to sdiscovery server @',repli_broker_ip)
-                dclient = Dclient('PUB',self.args.topic,self.args.id,repli_broker_ip,self.ip)
-                for i in range(1):
-                    discovery_server_response = dclient.broadcast()
-                print('discovery_server_response',discovery_server_response)
-                context = zmq.Context()
-                # When not using broker, publisher publishes to localhost
-                connect_str = "tcp://*:5556"   # changed 12:54
-                self.socket = context.socket(zmq.PUB)
-                self.socket.bind(connect_str)
-                self.socket.send_string("yo yo yo this is a SETUP")
-            # wait for friendly APIs to connect.
-            time.sleep(2)
-        else:            
-            print('not owning pub',owning_pub , pub_info)
-            time.sleep(2)
-            self.socket = None
-            self.register_topic()
-            self.broker_topic_data, znode_stats = self.zk.get(self.broker_topic_path)
-            self.get_broker()
+        self.pub_info = self.broker_topic_data.split(',')
+        print('pub_info',self.pub_info,'self.args.id',self.args.id) #,self.args.id==pub_info[1])
+        if self.pub_info == '':
+            self.waitForBrokerTopic()
+        else:
+            print('pub_info',self.pub_info,'self.args.id',self.args.id) #,self.args.id==pub_info[1])
+            repli_broker_ip = self.pub_info[0]
+            self.owning_pub = self.pub_info[1]
+            if self.owning_pub == self.args.id:
+                self.context = zmq.Context()
+                self.use_broker = self.config['use_broker']
             
+                if self.use_broker:
+                    con_str = "tcp://" + repli_broker_ip + ":" + self.config['pub_port']
+                    print('Using broker @',con_str)
+                    self.socket = self.context.socket(zmq.PUB)
+                    self.socket.connect(con_str)
+                else:
+                    # con_str = "tcp://" + self.ip + ":" + config['pub_port']
+                    print('Not using broker. Connecting to sdiscovery server @',repli_broker_ip)
+                    dclient = Dclient('PUB',self.args.topic,self.args.id,repli_broker_ip,self.ip)
+                    for i in range(1):
+                        discovery_server_response = dclient.broadcast()
+                    print('discovery_server_response',discovery_server_response)
+                    context = zmq.Context()
+                    # When not using broker, publisher publishes to localhost
+                    connect_str = "tcp://*:5556"   # changed 12:54
+                    self.socket = context.socket(zmq.PUB)
+                    self.socket.bind(connect_str)
+                    self.socket.send_string("yo yo yo this is a SETUP")
+                # wait for friendly APIs to connect.
+                time.sleep(2)
+            else:    
+                self.waitForBrokerTopic()        
+
+
+    def waitForBrokerTopic(self):
+        print('not owning pub',self.owning_pub , self.pub_info)
+        time.sleep(2)
+        self.socket = None
+        self.register_topic()
+        data , znode_stats = self.zk.get(self.broker_topic_path)
+        self.broker_topic_data = data.decode('utf-8')
+        self.get_broker()
 
     def send(self, message):
         self.mq.append(message)

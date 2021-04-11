@@ -35,7 +35,7 @@ def parseCmdLineArgs ():
     # parse the command line
     parser = argparse.ArgumentParser ()
     # add optional arguments
-    parser.add_argument ("-his", "--history", default=5,help="History default 5 units of message")
+    parser.add_argument ("-his", "--history", default=1,help="History default 5 units of message")
     # add positional arguments in that order
     parser.add_argument ("topic", help="Topic")
     parser.add_argument ("id", help="ID")
@@ -92,7 +92,10 @@ class Subscriber():
         while not self.topic in self.topics:
             print('waiting for topic:',self.topic)
             time.sleep(2)
-            self.topics = self.zk.get_children('/broker_topics')
+            try:
+                self.topics = self.zk.get_children('/broker_topics')
+            except:
+                pass
 
         @zk.DataWatch('/broker_topics/' + self.topic)
         def watch_data(data, stat):
@@ -158,8 +161,10 @@ class Subscriber():
             if self.socket in socks:# and socks[self.socket] == zmq.POLLIN:
                 response = self.socket.recv_string()
                 response_list = response.split(';')
-                if len(response_list)> self.args.history:
-                    response = ';'.join(response_list[:-self.args.history])
+                
+                if len(response_list)> int(self.args.history):
+                    response = ';'.join(response_list[-1:])
+                    print('len(response_list)',len(response_list),'int(self.args.history)',int(self.args.history),'LIST',response_list[-int(self.args.history):])
                 return response
         else:
             print('not running')
@@ -173,11 +178,11 @@ def main():
     start_time = datetime.now()
     last_time = start_time
     while True:
-        try:
-            reply = sub1.get()
-        except:
-            reply = None
-            print('timeout')
+        # try:
+        reply = sub1.get()
+        # except:
+        #     reply = None
+        #     print('timeout')
         now = datetime.now()
         elapsed_time = str((now - start_time))
         cycle_time = str((now - last_time))

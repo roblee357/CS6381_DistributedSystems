@@ -32,7 +32,7 @@ class BorDS:
         # zk.claim_lead()
         # zk.checkIfLeader()
         # zk.start_leader_checks()
-        zk.start_load_ballancing()
+        # zk.start_load_ballancing()
         zk.assign_broker()
         if 'broker_on' in args.brokermode:
             configurator.change('use_broker',True)
